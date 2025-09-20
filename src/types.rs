@@ -198,16 +198,26 @@ pub enum BotCommand {
     Savings,
     Chama,
     BtcPrice,
-    Deposit { amount: f64, currency: String },
-    Withdraw { amount: f64, currency: String },
-    Transfer { amount: f64, currency: String, recipient: String },
+    Deposit {
+        amount: f64,
+        currency: String,
+    },
+    Withdraw {
+        amount: f64,
+        currency: String,
+    },
+    Transfer {
+        amount: f64,
+        currency: String,
+        recipient: String,
+    },
     Unknown(String),
 }
 
 impl BotCommand {
     pub fn parse(message: &str) -> Self {
         let message = message.trim().to_lowercase();
-        
+
         if message == "help" || message == "/help" {
             BotCommand::Help
         } else if message == "balance" || message == "/balance" {

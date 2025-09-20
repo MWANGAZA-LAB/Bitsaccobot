@@ -26,44 +26,44 @@ fn create_test_config() -> AppConfig {
 
 fn benchmark_bot_command_parsing(c: &mut Criterion) {
     let mut group = c.benchmark_group("bot_command_parsing");
-    
+
     group.bench_function("parse_help", |b| {
         b.iter(|| BotCommand::parse(black_box("help")))
     });
-    
+
     group.bench_function("parse_balance", |b| {
         b.iter(|| BotCommand::parse(black_box("balance")))
     });
-    
+
     group.bench_function("parse_deposit", |b| {
         b.iter(|| BotCommand::parse(black_box("deposit 100 USD")))
     });
-    
+
     group.bench_function("parse_withdraw", |b| {
         b.iter(|| BotCommand::parse(black_box("withdraw 50 KES")))
     });
-    
+
     group.bench_function("parse_transfer", |b| {
         b.iter(|| BotCommand::parse(black_box("transfer 25 USD +254712345678")))
     });
-    
+
     group.bench_function("parse_unknown", |b| {
         b.iter(|| BotCommand::parse(black_box("unknown command with many words")))
     });
-    
+
     group.finish();
 }
 
 fn benchmark_whatsapp_verification(c: &mut Criterion) {
     let config = create_test_config();
     let whatsapp_service = WhatsAppService::new(&config).unwrap();
-    
+
     c.bench_function("whatsapp_webhook_verification", |b| {
         b.iter(|| {
             whatsapp_service.verify_webhook(
                 black_box("subscribe"),
                 black_box("test_verify_token"),
-                black_box("challenge123")
+                black_box("challenge123"),
             )
         })
     });
@@ -72,7 +72,7 @@ fn benchmark_whatsapp_verification(c: &mut Criterion) {
 fn benchmark_concurrent_requests(c: &mut Criterion) {
     let rt = Runtime::new().unwrap();
     let config = create_test_config();
-    
+
     c.bench_function("concurrent_command_parsing", |b| {
         b.to_async(&rt).iter(|| async {
             let commands = vec![
@@ -85,12 +85,12 @@ fn benchmark_concurrent_requests(c: &mut Criterion) {
                 "withdraw 50 KES",
                 "transfer 25 USD +254712345678",
             ];
-            
+
             let futures: Vec<_> = commands
                 .into_iter()
                 .map(|cmd| async move { BotCommand::parse(cmd) })
                 .collect();
-            
+
             futures::future::join_all(futures).await
         })
     });
@@ -99,7 +99,7 @@ fn benchmark_concurrent_requests(c: &mut Criterion) {
 fn benchmark_message_processing(c: &mut Criterion) {
     let rt = Runtime::new().unwrap();
     let config = create_test_config();
-    
+
     c.bench_function("message_processing_simulation", |b| {
         b.to_async(&rt).iter(|| async {
             let messages = vec![
@@ -112,7 +112,7 @@ fn benchmark_message_processing(c: &mut Criterion) {
                 "savings",
                 "chama",
             ];
-            
+
             let results: Vec<_> = messages
                 .into_iter()
                 .map(|msg| {
@@ -122,7 +122,7 @@ fn benchmark_message_processing(c: &mut Criterion) {
                     command
                 })
                 .collect();
-            
+
             results
         })
     });
@@ -131,7 +131,7 @@ fn benchmark_message_processing(c: &mut Criterion) {
 fn benchmark_high_throughput(c: &mut Criterion) {
     let mut group = c.benchmark_group("high_throughput");
     group.measurement_time(std::time::Duration::from_secs(10));
-    
+
     group.bench_function("command_parsing_throughput", |b| {
         b.iter(|| {
             for i in 0..1000 {
@@ -139,7 +139,7 @@ fn benchmark_high_throughput(c: &mut Criterion) {
             }
         })
     });
-    
+
     group.finish();
 }
 

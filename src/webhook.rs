@@ -8,10 +8,7 @@ use tracing::{error, info};
 
 use crate::{
     error::{AppError, Result},
-    types::{
-        AppState, BotCommand, HealthResponse, WhatsAppSendResponse,
-        WhatsAppWebhook,
-    },
+    types::{AppState, BotCommand, HealthResponse, WhatsAppSendResponse, WhatsAppWebhook},
 };
 
 #[derive(Debug, Deserialize)]
@@ -44,7 +41,10 @@ pub async fn handle_webhook(
     }
 
     // Handle incoming messages
-    info!("Received webhook payload: {}", serde_json::to_string(&payload)?);
+    info!(
+        "Received webhook payload: {}",
+        serde_json::to_string(&payload)?
+    );
 
     let webhook: WhatsAppWebhook = serde_json::from_value(payload)
         .map_err(|e| AppError::Validation(format!("Invalid webhook payload: {}", e)))?;
@@ -57,10 +57,7 @@ pub async fn handle_webhook(
                         let phone_number = &message.from;
                         let message_text = &text.body;
 
-                        info!(
-                            "Processing message from {}: {}",
-                            phone_number, message_text
-                        );
+                        info!("Processing message from {}: {}", phone_number, message_text);
 
                         // Process the message asynchronously
                         let state_clone = state.clone();
@@ -68,7 +65,9 @@ pub async fn handle_webhook(
                         let message_clone = message_text.clone();
 
                         tokio::spawn(async move {
-                            if let Err(e) = process_message(state_clone, phone_clone, message_clone).await {
+                            if let Err(e) =
+                                process_message(state_clone, phone_clone, message_clone).await
+                            {
                                 error!("Error processing message: {}", e);
                             }
                         });
@@ -91,31 +90,62 @@ async fn process_message(state: AppState, phone_number: String, message: String)
                 .send_help_message(&phone_number)
                 .await?;
         }
-        BotCommand::Balance => {
-            match get_user_balance(&state, &phone_number).await {
-                Ok((savings, btc_balance, currency)) => {
-                    state
-                        .whatsapp_service
-                        .send_balance_message(&phone_number, savings, btc_balance, &currency)
-                        .await?;
-                }
-                Err(e) => {
-                    state
-                        .whatsapp_service
-                        .send_error_message(&phone_number, &e.to_string())
-                        .await?;
-                }
+        BotCommand::Balance => match get_user_balance(&state, &phone_number).await {
+            Ok((savings, btc_balance, currency)) => {
+                state
+                    .whatsapp_service
+                    .send_balance_message(&phone_number, savings, btc_balance, &currency)
+                    .await?;
             }
-        }
-        BotCommand::Savings => {
-            match get_user_savings(&state, &phone_number).await {
-                Ok(savings) => {
+            Err(e) => {
+                state
+                    .whatsapp_service
+                    .send_error_message(&phone_number, &e.to_string())
+                    .await?;
+            }
+        },
+        BotCommand::Savings => match get_user_savings(&state, &phone_number).await {
+            Ok(savings) => {
+                let message = format!(
+                    "💰 *Your Savings*\n\nTotal: {:.2} KES\n\nDetails:\n{}",
+                    savings.iter().map(|s| s.amount).sum::<f64>(),
+                    savings
+                        .iter()
+                        .map(|s| format!("• {:.2} {} ({})", s.amount, s.currency, s.id))
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                );
+                state
+                    .whatsapp_service
+                    .send_message(&phone_number, &message)
+                    .await?;
+            }
+            Err(e) => {
+                state
+                    .whatsapp_service
+                    .send_error_message(&phone_number, &e.to_string())
+                    .await?;
+            }
+        },
+        BotCommand::Chama => match get_user_chamas(&state, &phone_number).await {
+            Ok(chamas) => {
+                if chamas.is_empty() {
+                    state
+                        .whatsapp_service
+                        .send_message(&phone_number, "You are not part of any chama groups yet.")
+                        .await?;
+                } else {
                     let message = format!(
-                        "💰 *Your Savings*\n\nTotal: {:.2} KES\n\nDetails:\n{}",
-                        savings.iter().map(|s| s.amount).sum::<f64>(),
-                        savings
+                        "👥 *Your Chama Groups*\n\n{}",
+                        chamas
                             .iter()
-                            .map(|s| format!("• {:.2} {} ({})", s.amount, s.currency, s.id))
+                            .map(|c| format!(
+                                "• {} - {:.2} {} ({} members)",
+                                c.name,
+                                c.total_savings,
+                                c.currency,
+                                c.members.len()
+                            ))
                             .collect::<Vec<_>>()
                             .join("\n")
                     );
@@ -124,67 +154,33 @@ async fn process_message(state: AppState, phone_number: String, message: String)
                         .send_message(&phone_number, &message)
                         .await?;
                 }
-                Err(e) => {
-                    state
-                        .whatsapp_service
-                        .send_error_message(&phone_number, &e.to_string())
-                        .await?;
-                }
             }
-        }
-        BotCommand::Chama => {
-            match get_user_chamas(&state, &phone_number).await {
-                Ok(chamas) => {
-                    if chamas.is_empty() {
-                        state
-                            .whatsapp_service
-                            .send_message(&phone_number, "You are not part of any chama groups yet.")
-                            .await?;
-                    } else {
-                        let message = format!(
-                            "👥 *Your Chama Groups*\n\n{}",
-                            chamas
-                                .iter()
-                                .map(|c| format!(
-                                    "• {} - {:.2} {} ({} members)",
-                                    c.name,
-                                    c.total_savings,
-                                    c.currency,
-                                    c.members.len()
-                                ))
-                                .collect::<Vec<_>>()
-                                .join("\n")
-                        );
-                        state
-                            .whatsapp_service
-                            .send_message(&phone_number, &message)
-                            .await?;
-                    }
-                }
-                Err(e) => {
-                    state
-                        .whatsapp_service
-                        .send_error_message(&phone_number, &e.to_string())
-                        .await?;
-                }
+            Err(e) => {
+                state
+                    .whatsapp_service
+                    .send_error_message(&phone_number, &e.to_string())
+                    .await?;
             }
-        }
-        BotCommand::BtcPrice => {
-            match state.btc_service.get_btc_price_usd().await {
-                Ok(price) => {
-                    state
-                        .whatsapp_service
-                        .send_btc_price_message(&phone_number, price.price, price.change_24h, &price.currency)
-                        .await?;
-                }
-                Err(e) => {
-                    state
-                        .whatsapp_service
-                        .send_error_message(&phone_number, &e.to_string())
-                        .await?;
-                }
+        },
+        BotCommand::BtcPrice => match state.btc_service.get_btc_price_usd().await {
+            Ok(price) => {
+                state
+                    .whatsapp_service
+                    .send_btc_price_message(
+                        &phone_number,
+                        price.price,
+                        price.change_24h,
+                        &price.currency,
+                    )
+                    .await?;
             }
-        }
+            Err(e) => {
+                state
+                    .whatsapp_service
+                    .send_error_message(&phone_number, &e.to_string())
+                    .await?;
+            }
+        },
         BotCommand::Deposit { amount, currency } => {
             match create_deposit(&state, &phone_number, amount, &currency).await {
                 Ok(transaction) => {
@@ -229,26 +225,24 @@ async fn process_message(state: AppState, phone_number: String, message: String)
             amount,
             currency,
             recipient,
-        } => {
-            match create_transfer(&state, &phone_number, amount, &currency, &recipient).await {
-                Ok(transaction) => {
-                    let message = format!(
-                        "Transfer of {:.2} {} to {} created successfully. Transaction ID: {}",
-                        amount, currency, recipient, transaction.id
-                    );
-                    state
-                        .whatsapp_service
-                        .send_success_message(&phone_number, &message)
-                        .await?;
-                }
-                Err(e) => {
-                    state
-                        .whatsapp_service
-                        .send_error_message(&phone_number, &e.to_string())
-                        .await?;
-                }
+        } => match create_transfer(&state, &phone_number, amount, &currency, &recipient).await {
+            Ok(transaction) => {
+                let message = format!(
+                    "Transfer of {:.2} {} to {} created successfully. Transaction ID: {}",
+                    amount, currency, recipient, transaction.id
+                );
+                state
+                    .whatsapp_service
+                    .send_success_message(&phone_number, &message)
+                    .await?;
             }
-        }
+            Err(e) => {
+                state
+                    .whatsapp_service
+                    .send_error_message(&phone_number, &e.to_string())
+                    .await?;
+            }
+        },
         BotCommand::Unknown(message) => {
             let response = format!(
                 "I didn't understand: \"{}\"\n\nSend `help` to see available commands.",
@@ -264,19 +258,13 @@ async fn process_message(state: AppState, phone_number: String, message: String)
     Ok(())
 }
 
-async fn get_user_balance(
-    state: &AppState,
-    phone_number: &str,
-) -> Result<(f64, f64, String)> {
+async fn get_user_balance(state: &AppState, phone_number: &str) -> Result<(f64, f64, String)> {
     let user = state
         .bitsacco_service
         .get_user_by_phone(phone_number)
         .await?;
 
-    let savings = state
-        .bitsacco_service
-        .get_total_savings(&user.id)
-        .await?;
+    let savings = state.bitsacco_service.get_total_savings(&user.id).await?;
 
     let btc_balance = state
         .bitsacco_service
@@ -295,10 +283,7 @@ async fn get_user_savings(
         .get_user_by_phone(phone_number)
         .await?;
 
-    state
-        .bitsacco_service
-        .get_user_savings(&user.id)
-        .await
+    state.bitsacco_service.get_user_savings(&user.id).await
 }
 
 async fn get_user_chamas(
@@ -310,10 +295,7 @@ async fn get_user_chamas(
         .get_user_by_phone(phone_number)
         .await?;
 
-    state
-        .bitsacco_service
-        .get_user_chamas(&user.id)
-        .await
+    state.bitsacco_service.get_user_chamas(&user.id).await
 }
 
 async fn create_deposit(
@@ -385,7 +367,11 @@ pub async fn health_check(State(state): State<AppState>) -> Result<Json<HealthRe
     let mut services = HashMap::new();
 
     // Check WhatsApp service
-    match state.whatsapp_service.send_message("test", "health check").await {
+    match state
+        .whatsapp_service
+        .send_message("test", "health check")
+        .await
+    {
         Ok(_) => services.insert("whatsapp".to_string(), "healthy".to_string()),
         Err(_) => services.insert("whatsapp".to_string(), "unhealthy".to_string()),
     };

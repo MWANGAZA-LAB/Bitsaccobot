@@ -49,7 +49,10 @@ impl IntoResponse for AppError {
             AppError::WhatsApp(msg) => (StatusCode::BAD_GATEWAY, msg),
             AppError::BitSacco(msg) => (StatusCode::BAD_GATEWAY, msg),
             AppError::BtcService(msg) => (StatusCode::BAD_GATEWAY, msg),
-            AppError::RateLimit => (StatusCode::TOO_MANY_REQUESTS, "Rate limit exceeded".to_string()),
+            AppError::RateLimit => (
+                StatusCode::TOO_MANY_REQUESTS,
+                "Rate limit exceeded".to_string(),
+            ),
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized access".to_string()),
             AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
         };

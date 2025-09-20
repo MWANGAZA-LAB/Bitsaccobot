@@ -5,10 +5,7 @@ use axum::{
 };
 use std::net::SocketAddr;
 use tower::ServiceBuilder;
-use tower_http::{
-    cors::CorsLayer,
-    trace::TraceLayer,
-};
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -21,7 +18,7 @@ mod webhook;
 use config::AppConfig;
 use services::{bitsacco::BitSaccoService, btc::BtcService, whatsapp::WhatsAppService};
 use types::AppState;
-use webhook::{handle_webhook, send_message, health_check};
+use webhook::{handle_webhook, health_check, send_message};
 
 #[tokio::main]
 async fn main() -> Result<()> {

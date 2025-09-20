@@ -35,7 +35,7 @@ impl BitSaccoService {
         T: serde::de::DeserializeOwned,
     {
         let url = format!("{}/{}", self.base_url, endpoint);
-        
+
         info!("Making request to BitSacco API: {}", endpoint);
 
         let response = self
@@ -53,7 +53,7 @@ impl BitSaccoService {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            
+
             error!("BitSacco API error: {} - {}", status, error_text);
             return Err(AppError::BitSacco(format!(
                 "API error {}: {}",
@@ -75,7 +75,7 @@ impl BitSaccoService {
         U: serde::de::DeserializeOwned,
     {
         let url = format!("{}/{}", self.base_url, endpoint);
-        
+
         info!("Making POST request to BitSacco API: {}", endpoint);
 
         let response = self
@@ -94,7 +94,7 @@ impl BitSaccoService {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            
+
             error!("BitSacco API error: {} - {}", status, error_text);
             return Err(AppError::BitSacco(format!(
                 "API error {}: {}",

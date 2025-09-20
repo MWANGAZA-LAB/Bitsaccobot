@@ -10,7 +10,7 @@ use serde_json::json;
 async fn create_test_config() -> AppConfig {
     let mut server = Server::new_async().await;
     let url = server.url();
-    
+
     AppConfig {
         whatsapp_access_token: "test_token".to_string(),
         whatsapp_phone_number_id: "test_phone_id".to_string(),
@@ -176,19 +176,22 @@ async fn test_btc_service_price() {
     let btc_service = BtcService::new(&config).unwrap();
 
     // Mock the API response
-    let _m = mock("GET", "/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true")
-        .with_status(200)
-        .with_header("content-type", "application/json")
-        .with_body(
-            json!({
-                "bitcoin": {
-                    "usd": 50000.0,
-                    "usd_24h_change": 2.5
-                }
-            })
-            .to_string(),
-        )
-        .create();
+    let _m = mock(
+        "GET",
+        "/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
+    )
+    .with_status(200)
+    .with_header("content-type", "application/json")
+    .with_body(
+        json!({
+            "bitcoin": {
+                "usd": 50000.0,
+                "usd_24h_change": 2.5
+            }
+        })
+        .to_string(),
+    )
+    .create();
 
     let price = btc_service.get_btc_price_usd().await.unwrap();
 
@@ -259,13 +262,17 @@ async fn test_message_validation() {
 
     // Test message too long
     let long_message = "a".repeat(5000);
-    let result = whatsapp_service.send_message("+254712345678", &long_message).await;
+    let result = whatsapp_service
+        .send_message("+254712345678", &long_message)
+        .await;
     assert!(result.is_err());
 
     // Test valid message
     let valid_message = "Hello, this is a valid message";
     // Note: This would fail in real test due to no mock, but validates the length check passes
-    let result = whatsapp_service.send_message("+254712345678", valid_message).await;
+    let result = whatsapp_service
+        .send_message("+254712345678", valid_message)
+        .await;
     // We expect this to fail due to no mock, but not due to validation
     assert!(result.is_err());
 }

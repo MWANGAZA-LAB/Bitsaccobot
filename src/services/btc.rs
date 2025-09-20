@@ -33,12 +33,12 @@ impl BtcService {
         T: serde::de::DeserializeOwned,
     {
         let mut url = format!("{}/{}", self.base_url, endpoint);
-        
+
         // Add API key if available
         if let Some(api_key) = &self.api_key {
             url = format!("{}?api_key={}", url, api_key);
         }
-        
+
         info!("Making request to BTC API: {}", endpoint);
 
         let response = self
@@ -55,7 +55,7 @@ impl BtcService {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            
+
             error!("BTC API error: {} - {}", status, error_text);
             return Err(AppError::BtcService(format!(
                 "API error {}: {}",
@@ -78,17 +78,19 @@ impl BtcService {
     }
 
     async fn get_btc_price_from_coingecko(&self, currency: &str) -> Result<BtcPrice> {
-        let endpoint = format!("simple/price?ids=bitcoin&vs_currencies={}&include_24hr_change=true", 
-                              currency.to_lowercase());
-        
+        let endpoint = format!(
+            "simple/price?ids=bitcoin&vs_currencies={}&include_24hr_change=true",
+            currency.to_lowercase()
+        );
+
         let response: HashMap<String, serde_json::Value> = self.make_request(&endpoint).await?;
-        
+
         if let Some(bitcoin_data) = response.get("bitcoin") {
             let price = bitcoin_data
                 .get(&currency.to_lowercase())
                 .and_then(|v| v.as_f64())
                 .ok_or_else(|| AppError::BtcService("Price not found in response".to_string()))?;
-                
+
             let change_24h = bitcoin_data
                 .get(&format!("{}_24h_change", currency.to_lowercase()))
                 .and_then(|v| v.as_f64())
@@ -101,7 +103,9 @@ impl BtcService {
                 last_updated: chrono::Utc::now().to_rfc3339(),
             })
         } else {
-            Err(AppError::BtcService("Bitcoin data not found in response".to_string()))
+            Err(AppError::BtcService(
+                "Bitcoin data not found in response".to_string(),
+            ))
         }
     }
 

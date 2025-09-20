@@ -1,9 +1,7 @@
 use crate::{
     config::AppConfig,
     error::{AppError, Result},
-    types::{
-        WhatsAppSendRequest, WhatsAppSendResponse, WhatsAppTextContent,
-    },
+    types::{WhatsAppSendRequest, WhatsAppSendResponse, WhatsAppTextContent},
 };
 use reqwest::Client;
 use tracing::{error, info, warn};
@@ -36,7 +34,10 @@ impl WhatsAppService {
             info!("Webhook verification successful");
             Ok(challenge.to_string())
         } else {
-            warn!("Webhook verification failed: mode={}, token={}", mode, token);
+            warn!(
+                "Webhook verification failed: mode={}, token={}",
+                mode, token
+            );
             Err(AppError::Unauthorized)
         }
     }
@@ -78,7 +79,7 @@ impl WhatsAppService {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            
+
             error!("WhatsApp API error: {} - {}", status, error_text);
             return Err(AppError::WhatsApp(format!(
                 "API error {}: {}",
@@ -91,7 +92,10 @@ impl WhatsAppService {
             .await
             .map_err(|e| AppError::WhatsApp(format!("Failed to parse response: {}", e)))?;
 
-        info!("Message sent successfully with ID: {:?}", send_response.messages);
+        info!(
+            "Message sent successfully with ID: {:?}",
+            send_response.messages
+        );
         Ok(send_response)
     }
 
