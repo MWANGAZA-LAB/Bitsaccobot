@@ -116,38 +116,10 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: github.ref == 'refs/heads/develop'
-    environment: staging
-    
-    steps:
-    - name: Deploy to Railway
-      uses: railway-app/railway-deploy@v1
-      with:
-        railway-token: ${{ secrets.RAILWAY_TOKEN }}
-        service: bitsacco-whatsapp-bot-staging
-
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: github.ref == 'refs/heads/main'
-    environment: production
-    
-    steps:
-    - name: Deploy to Railway
-      uses: railway-app/railway-deploy@v1
-      with:
-        railway-token: ${{ secrets.RAILWAY_TOKEN }}
-        service: bitsacco-whatsapp-bot
-
   load-test:
     name: Load Testing
     runs-on: ubuntu-latest
-    needs: [deploy-staging]
+    needs: [build]
     if: github.ref == 'refs/heads/develop'
     
     steps:
@@ -163,20 +135,3 @@ jobs:
     - name: Run load tests
       run: |
         cargo bench --bench load_test
-      env:
-        STAGING_URL: ${{ secrets.STAGING_URL }}
-
-  notify:
-    name: Notify Deployment
-    runs-on: ubuntu-latest
-    needs: [deploy-production, deploy-staging]
-    if: always()
-    
-    steps:
-    - name: Notify Slack
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        channel: '#deployments'
-        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-      if: always()
