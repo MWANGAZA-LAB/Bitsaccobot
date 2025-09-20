@@ -8,6 +8,7 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub struct AppState {
+    #[allow(dead_code)]
     pub config: AppConfig,
     pub whatsapp_service: WhatsAppService,
     pub bitsacco_service: BitSaccoService,
@@ -184,6 +185,7 @@ pub struct BtcPrice {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+#[allow(dead_code)]
 pub struct BtcMarketData {
     pub current_price: HashMap<String, f64>,
     pub price_change_percentage_24h: f64,

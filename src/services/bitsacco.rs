@@ -130,6 +130,7 @@ impl BitSaccoService {
         self.make_request(&endpoint).await
     }
 
+    #[allow(dead_code)]
     pub async fn get_user_transactions(&self, user_id: &str) -> Result<Vec<BitSaccoTransaction>> {
         let endpoint = format!("users/{}/transactions", user_id);
         self.make_request(&endpoint).await
@@ -198,7 +199,7 @@ impl BitSaccoService {
         let endpoint = "health";
         let response = self
             .client
-            .get(&format!("{}/{}", self.base_url, endpoint))
+            .get(format!("{}/{}", self.base_url, endpoint))
             .header("Authorization", format!("Bearer {}", self.api_token))
             .send()
             .await

@@ -87,12 +87,12 @@ impl BtcService {
 
         if let Some(bitcoin_data) = response.get("bitcoin") {
             let price = bitcoin_data
-                .get(&currency.to_lowercase())
+                .get(currency.to_lowercase())
                 .and_then(|v| v.as_f64())
                 .ok_or_else(|| AppError::BtcService("Price not found in response".to_string()))?;
 
             let change_24h = bitcoin_data
-                .get(&format!("{}_24h_change", currency.to_lowercase()))
+                .get(format!("{}_24h_change", currency.to_lowercase()))
                 .and_then(|v| v.as_f64())
                 .unwrap_or(0.0);
 
@@ -113,6 +113,7 @@ impl BtcService {
         self.get_btc_price("usd").await
     }
 
+    #[allow(dead_code)]
     pub async fn get_btc_price_kes(&self) -> Result<BtcPrice> {
         self.get_btc_price("kes").await
     }

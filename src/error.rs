@@ -30,6 +30,7 @@ pub enum AppError {
     BtcService(String),
 
     #[error("Rate limit exceeded")]
+    #[allow(dead_code)]
     RateLimit,
 
     #[error("Unauthorized access")]

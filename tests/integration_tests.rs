@@ -1,17 +1,17 @@
 use bitsacco_whatsapp_bot::{
     config::AppConfig,
     services::{bitsacco::BitSaccoService, btc::BtcService, whatsapp::WhatsAppService},
-    types::{AppState, BotCommand},
+    types::BotCommand,
 };
-use mockito::{mock, Server};
+use mockito::{Server, ServerGuard};
 use serde_json::json;
 
 // Helper function to create test config
-async fn create_test_config() -> AppConfig {
-    let mut server = Server::new_async().await;
+async fn create_test_config() -> (AppConfig, ServerGuard) {
+    let server = Server::new_async().await;
     let url = server.url();
 
-    AppConfig {
+    let config = AppConfig {
         whatsapp_access_token: "test_token".to_string(),
         whatsapp_phone_number_id: "test_phone_id".to_string(),
         whatsapp_webhook_verify_token: "test_verify_token".to_string(),
@@ -22,14 +22,16 @@ async fn create_test_config() -> AppConfig {
         rust_log: "debug".to_string(),
         rate_limit_requests_per_minute: 60,
         max_message_length: 4096,
-        btc_api_base_url: url,
+        btc_api_base_url: url.clone(),
         btc_api_key: Some("test_btc_key".to_string()),
-    }
+    };
+
+    (config, server)
 }
 
 #[tokio::test]
 async fn test_whatsapp_webhook_verification() {
-    let config = create_test_config().await;
+    let (config, _server) = create_test_config().await;
     let whatsapp_service = WhatsAppService::new(&config).unwrap();
 
     // Test successful verification
@@ -99,11 +101,11 @@ async fn test_bot_command_parsing() {
 
 #[tokio::test]
 async fn test_bitsacco_service_user_lookup() {
-    let config = create_test_config().await;
+    let (config, mut server) = create_test_config().await;
     let bitsacco_service = BitSaccoService::new(&config).unwrap();
 
     // Mock the API response
-    let _m = mock("GET", "/users/phone/+254712345678")
+    let _m = server.mock("GET", "/users/phone/+254712345678")
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(
@@ -131,11 +133,11 @@ async fn test_bitsacco_service_user_lookup() {
 
 #[tokio::test]
 async fn test_bitsacco_service_savings() {
-    let config = create_test_config().await;
+    let (config, mut server) = create_test_config().await;
     let bitsacco_service = BitSaccoService::new(&config).unwrap();
 
     // Mock the API response
-    let _m = mock("GET", "/users/user123/savings")
+    let _m = server.mock("GET", "/users/user123/savings")
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(
@@ -172,11 +174,11 @@ async fn test_bitsacco_service_savings() {
 
 #[tokio::test]
 async fn test_btc_service_price() {
-    let config = create_test_config().await;
+    let (config, mut server) = create_test_config().await;
     let btc_service = BtcService::new(&config).unwrap();
 
     // Mock the API response
-    let _m = mock(
+    let _m = server.mock(
         "GET",
         "/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
     )
@@ -202,11 +204,11 @@ async fn test_btc_service_price() {
 
 #[tokio::test]
 async fn test_whatsapp_send_message() {
-    let config = create_test_config().await;
+    let (config, mut server) = create_test_config().await;
     let whatsapp_service = WhatsAppService::new(&config).unwrap();
 
     // Mock the WhatsApp API response
-    let _m = mock("POST", "/test_phone_id/messages")
+    let _m = server.mock("POST", "/test_phone_id/messages")
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(
@@ -236,11 +238,11 @@ async fn test_whatsapp_send_message() {
 
 #[tokio::test]
 async fn test_error_handling() {
-    let config = create_test_config().await;
+    let (config, mut server) = create_test_config().await;
     let bitsacco_service = BitSaccoService::new(&config).unwrap();
 
     // Mock API error response
-    let _m = mock("GET", "/users/phone/invalid")
+    let _m = server.mock("GET", "/users/phone/invalid")
         .with_status(404)
         .with_header("content-type", "application/json")
         .with_body(
@@ -257,7 +259,7 @@ async fn test_error_handling() {
 
 #[tokio::test]
 async fn test_message_validation() {
-    let config = create_test_config().await;
+    let (config, _server) = create_test_config().await;
     let whatsapp_service = WhatsAppService::new(&config).unwrap();
 
     // Test message too long

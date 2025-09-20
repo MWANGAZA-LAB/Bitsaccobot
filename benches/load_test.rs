@@ -1,11 +1,10 @@
 use bitsacco_whatsapp_bot::{
     config::AppConfig,
-    services::{bitsacco::BitSaccoService, btc::BtcService, whatsapp::WhatsAppService},
-    types::{AppState, BotCommand},
+    services::whatsapp::WhatsAppService,
+    types::BotCommand,
 };
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use std::sync::Arc;
-use tokio::runtime::Runtime;
+use criterion::{criterion_group, criterion_main, Criterion};
+use std::hint::black_box;
 
 fn create_test_config() -> AppConfig {
     AppConfig {
@@ -70,11 +69,9 @@ fn benchmark_whatsapp_verification(c: &mut Criterion) {
 }
 
 fn benchmark_concurrent_requests(c: &mut Criterion) {
-    let rt = Runtime::new().unwrap();
-    let config = create_test_config();
 
     c.bench_function("concurrent_command_parsing", |b| {
-        b.to_async(&rt).iter(|| async {
+        b.iter(|| {
             let commands = vec![
                 "help",
                 "balance",
@@ -86,22 +83,15 @@ fn benchmark_concurrent_requests(c: &mut Criterion) {
                 "transfer 25 USD +254712345678",
             ];
 
-            let futures: Vec<_> = commands
-                .into_iter()
-                .map(|cmd| async move { BotCommand::parse(cmd) })
-                .collect();
-
-            futures::future::join_all(futures).await
+            commands.into_iter().map(BotCommand::parse).collect::<Vec<_>>()
         })
     });
 }
 
 fn benchmark_message_processing(c: &mut Criterion) {
-    let rt = Runtime::new().unwrap();
-    let config = create_test_config();
 
     c.bench_function("message_processing_simulation", |b| {
-        b.to_async(&rt).iter(|| async {
+        b.iter(|| {
             let messages = vec![
                 "help",
                 "balance",
