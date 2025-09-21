@@ -401,7 +401,7 @@ impl BotCommand {
             BotCommand::Savings
         } else if message == "chama" || message == "/chama" {
             BotCommand::Chama
-        } else if message == "btc" || message == "bitcoin" || message == "/btc" {
+        } else if message == "btc" || message == "bitcoin" || message == "bitcoin price" || message == "/btc" {
             BotCommand::BtcPrice
         } else if message.starts_with("deposit ") {
             // Parse deposit command: "deposit 100 KES mpesa" or "deposit 100 KES lightning"

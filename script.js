@@ -354,8 +354,46 @@ if (typeof module !== 'undefined' && module.exports) {
     };
 }
 
+// Live Bitcoin Price Fetcher
+async function fetchBitcoinPrice() {
+    try {
+        // Fetch USD price
+        const usdResponse = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot');
+        const usdData = await usdResponse.json();
+        const usdPrice = parseFloat(usdData.data.amount);
+        
+        // Fetch KES price (using USD to KES conversion rate)
+        // Note: In a real implementation, you'd want to get KES directly or use a proper exchange rate API
+        const kesRate = 150; // Approximate USD to KES rate (you might want to fetch this from an API)
+        const kesPrice = usdPrice * kesRate;
+        
+        // Update the DOM
+        document.getElementById('btc-price-usd').textContent = `$${usdPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.getElementById('btc-price-kes').textContent = `KES ${kesPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        
+        // Update timestamp
+        const now = new Date();
+        document.getElementById('price-update-time').textContent = now.toLocaleTimeString('en-US', { 
+            hour12: false, 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+    } catch (error) {
+        console.error('Error fetching Bitcoin price:', error);
+        document.getElementById('btc-price-usd').textContent = 'Error';
+        document.getElementById('btc-price-kes').textContent = 'Error';
+        document.getElementById('price-update-time').textContent = 'Failed';
+    }
+}
+
 // BitSacco WhatsApp Bot Animated Chat
 document.addEventListener('DOMContentLoaded', function() {
+    // Fetch Bitcoin price on page load
+    fetchBitcoinPrice();
+    
+    // Update Bitcoin price every 30 seconds
+    setInterval(fetchBitcoinPrice, 30000);
     const chatMessages = [
         {
             user: "balance",

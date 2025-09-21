@@ -65,6 +65,7 @@ async fn test_bot_command_parsing() {
     // Test BTC command
     assert_eq!(BotCommand::parse("btc"), BotCommand::BtcPrice);
     assert_eq!(BotCommand::parse("bitcoin"), BotCommand::BtcPrice);
+    assert_eq!(BotCommand::parse("bitcoin price"), BotCommand::BtcPrice);
 
     // Test deposit command
     assert_eq!(

@@ -72,6 +72,25 @@
                     Create chama groups, contribute to shares, track investments, and manage your financial future with ease.
                     Built with the latest technologies for maximum security, performance, and reliability.
                 </p>
+                <div class="bitcoin-price-card">
+                    <div class="bitcoin-price-header">
+                        <i class="fab fa-bitcoin"></i>
+                        <span>Live Bitcoin Price</span>
+                    </div>
+                    <div class="bitcoin-price-content">
+                        <div class="price-item">
+                            <span class="price-label">USD:</span>
+                            <span class="price-value" id="btc-price-usd">Loading...</span>
+                        </div>
+                        <div class="price-item">
+                            <span class="price-label">KES:</span>
+                            <span class="price-value" id="btc-price-kes">Loading...</span>
+                        </div>
+                        <div class="price-update">
+                            <small>Updated: <span id="price-update-time">--:--</span></small>
+                        </div>
+                    </div>
+                </div>
                 <div class="hero-buttons">
                     <a href="https://github.com/MWANGAZA-LAB/Bitsaccobot" class="btn btn-primary" target="_blank">
                         <i class="fas fa-rocket"></i> Get Started
@@ -341,6 +360,38 @@
                         <div class="command-item">
                             <code class="command">savings</code>
                             <span class="command-desc">View detailed savings information</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">membership</code>
+                            <span class="command-desc">View membership shares</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">buy shares 10</code>
+                            <span class="command-desc">Purchase membership shares</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">share history</code>
+                            <span class="command-desc">View share purchase history</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">history</code>
+                            <span class="command-desc">View transaction history</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="command-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-bolt"></i>
+                        Lightning Network
+                    </h3>
+                    <div class="command-list">
+                        <div class="command-item">
+                            <code class="command">lightning deposit 50 USD</code>
+                            <span class="command-desc">Lightning network deposit</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">lightning withdraw 25 KES</code>
+                            <span class="command-desc">Lightning network withdrawal</span>
                         </div>
                     </div>
                 </div>

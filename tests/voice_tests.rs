@@ -123,6 +123,9 @@ async fn test_voice_command_parsing() {
     let command = BotCommand::parse("bitcoin");
     assert!(matches!(command, BotCommand::BtcPrice));
     
+    let command = BotCommand::parse("bitcoin price");
+    assert!(matches!(command, BotCommand::BtcPrice));
+    
     let command = BotCommand::parse("deposit 100 usd");
     match command {
         BotCommand::Deposit { amount, currency } => {

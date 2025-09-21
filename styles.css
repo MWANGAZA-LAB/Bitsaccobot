@@ -132,6 +132,72 @@ body {
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
 }
 
+.bitcoin-price-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 30px 0;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.bitcoin-price-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: #f7931a;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.bitcoin-price-header i {
+    font-size: 1.3rem;
+}
+
+.bitcoin-price-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.price-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.price-item:last-child {
+    border-bottom: none;
+}
+
+.price-label {
+    color: #d1d5db;
+    font-weight: 500;
+}
+
+.price-value {
+    color: #10b981;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.price-update {
+    text-align: center;
+    margin-top: 10px;
+    color: #9ca3af;
+}
+
+.price-update small {
+    font-size: 0.85rem;
+}
+
 .hero::before {
     content: '';
     position: absolute;
@@ -767,6 +833,19 @@ section {
     .hero-logo {
         width: 100px;
         height: 100px;
+    }
+    
+    .bitcoin-price-card {
+        margin: 20px 0;
+        padding: 15px;
+    }
+    
+    .bitcoin-price-header {
+        font-size: 1rem;
+    }
+    
+    .price-value {
+        font-size: 1rem;
     }
     
     .hero-stats {
