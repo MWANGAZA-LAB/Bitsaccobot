@@ -44,7 +44,6 @@
             <div class="nav-menu">
                 <a href="#features" class="nav-link">Features</a>
                 <a href="#commands" class="nav-link">Commands</a>
-                <a href="#api" class="nav-link">API</a>
                 <a href="https://github.com/MWANGAZA-LAB/Bitsaccobot" class="nav-link github-link" target="_blank">
                     <i class="fab fa-github"></i> GitHub
                 </a>
@@ -349,70 +348,6 @@
         </div>
     </section>
 
-    <!-- API Section -->
-    <section id="api" class="api">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">API Integration</h2>
-                <p class="section-description">
-                    RESTful API for programmatic access and integrations
-                </p>
-            </div>
-            <div class="api-content">
-                <div class="api-endpoints">
-                    <h3 class="api-subtitle">Available Endpoints</h3>
-                    <div class="endpoint-list">
-                        <div class="endpoint-item">
-                            <div class="endpoint-method post">POST</div>
-                            <div class="endpoint-path">/webhook</div>
-                            <div class="endpoint-desc">Receives WhatsApp messages</div>
-                        </div>
-                        <div class="endpoint-item">
-                            <div class="endpoint-method get">GET</div>
-                            <div class="endpoint-path">/webhook</div>
-                            <div class="endpoint-desc">Webhook verification</div>
-                        </div>
-                        <div class="endpoint-item">
-                            <div class="endpoint-method post">POST</div>
-                            <div class="endpoint-path">/send</div>
-                            <div class="endpoint-desc">Send WhatsApp messages</div>
-                        </div>
-                        <div class="endpoint-item">
-                            <div class="endpoint-method get">GET</div>
-                            <div class="endpoint-path">/health</div>
-                            <div class="endpoint-desc">System health check</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="api-example">
-                    <h3 class="api-subtitle">Example Usage</h3>
-                    <div class="code-block">
-                        <div class="code-header">
-                            <span class="code-title">Send Message</span>
-                            <button class="copy-btn" onclick="copyCode(this)">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </div>
-                        <pre><code class="language-bash">curl -X POST http://localhost:8080/send \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "+254712345678",
-    "message": "Hello from BitSacco Bot!"
-  }'</code></pre>
-                    </div>
-                    <div class="code-block">
-                        <div class="code-header">
-                            <span class="code-title">Health Check</span>
-                            <button class="copy-btn" onclick="copyCode(this)">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </div>
-                        <pre><code class="language-bash">curl http://localhost:8080/health</code></pre>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
 
     <!-- Footer -->
