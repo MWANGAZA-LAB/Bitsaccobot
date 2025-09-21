@@ -132,13 +132,13 @@ body {
 
 .logo-emblem {
     position: relative;
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
 }
 
 .logo-circle {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border: 3px solid #20b2aa;
     border-radius: 50%;
     position: relative;
@@ -149,34 +149,34 @@ body {
 }
 
 .logo-knight {
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     position: relative;
 }
 
 .logo-knight::before {
     content: '';
     position: absolute;
-    top: 2px;
+    top: 0;
     left: 50%;
     transform: translateX(-50%);
     width: 0;
     height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-bottom: 10px solid #20b2aa;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 14px solid #20b2aa;
 }
 
 .logo-knight::after {
     content: '';
     position: absolute;
-    bottom: 2px;
+    bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 18px;
-    height: 3px;
+    width: 20px;
+    height: 4px;
     background: #20b2aa;
-    border-radius: 1.5px;
+    border-radius: 2px;
 }
 
 .logo-text {
@@ -920,18 +920,29 @@ section {
     }
     
     .logo-emblem {
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
     }
     
     .logo-circle {
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
     }
     
     .logo-knight {
-        width: 25px;
-        height: 25px;
+        width: 30px;
+        height: 30px;
+    }
+    
+    .logo-knight::before {
+        border-left: 7px solid transparent;
+        border-right: 7px solid transparent;
+        border-bottom: 12px solid #20b2aa;
+    }
+    
+    .logo-knight::after {
+        width: 18px;
+        height: 3px;
     }
     
     .logo-text {
@@ -1030,18 +1041,29 @@ section {
     }
     
     .logo-emblem {
-        width: 45px;
-        height: 45px;
+        width: 55px;
+        height: 55px;
     }
     
     .logo-circle {
-        width: 45px;
-        height: 45px;
+        width: 55px;
+        height: 55px;
     }
     
     .logo-knight {
-        width: 22px;
-        height: 22px;
+        width: 28px;
+        height: 28px;
+    }
+    
+    .logo-knight::before {
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: 10px solid #20b2aa;
+    }
+    
+    .logo-knight::after {
+        width: 16px;
+        height: 3px;
     }
     
     .logo-text {
