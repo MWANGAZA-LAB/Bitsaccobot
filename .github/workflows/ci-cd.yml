@@ -61,6 +61,18 @@ jobs:
     - name: Run integration tests
       run: cargo test --test integration_tests --verbose
 
+    - name: Install cargo-tarpaulin
+      run: cargo install cargo-tarpaulin --locked
+
+    - name: Run coverage
+      run: cargo tarpaulin --out Xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./cobertura.xml
+        fail_ci_if_error: false
+
   security:
     name: Security Audit
     runs-on: ubuntu-latest
@@ -76,21 +88,22 @@ jobs:
         override: true
 
     - name: Install cargo-audit
-      run: cargo install cargo-audit
+      run: cargo install cargo-audit --locked
 
     - name: Run security audit
       run: cargo audit
 
+    - name: Install cargo-deny
+      run: cargo install cargo-deny --locked
+
     - name: Run cargo deny
-      run: |
-        cargo install cargo-deny
-        cargo deny check
+      run: cargo deny check
 
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: [test, security]
-    if: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
+    if: ${{ secrets.DOCKER_USERNAME && secrets.DOCKER_PASSWORD }}
     
     steps:
     - name: Checkout code
@@ -112,8 +125,8 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          bitsacco/whatsapp-bot:latest
-          bitsacco/whatsapp-bot:${{ github.sha }}
+          ${{ secrets.DOCKER_USERNAME }}/whatsapp-bot:latest
+          ${{ secrets.DOCKER_USERNAME }}/whatsapp-bot:${{ github.sha }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -135,4 +148,10 @@ jobs:
 
     - name: Run load tests
       run: |
-        cargo bench --bench load_test
+        cargo bench --bench load_test -- --output-format bencher | tee load-test-results.txt
+
+    - name: Upload load test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: load-test-results
+        path: load-test-results.txt
