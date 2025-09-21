@@ -1,0 +1,20 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#1a1a2e" stroke="#16213e" stroke-width="10"/>
+  
+  <!-- Bitcoin symbol -->
+  <g transform="translate(100, 100)">
+    <!-- Outer circle -->
+    <circle cx="0" cy="0" r="60" fill="#f7931a" stroke="#ff9500" stroke-width="4"/>
+    
+    <!-- Bitcoin B symbol -->
+    <path d="M-25,-35 L-25,35 L-15,35 L-15,25 L-5,25 L-5,35 L5,35 L5,25 L15,25 L15,35 L25,35 L25,-35 L15,-35 L15,-25 L5,-25 L5,-35 L-5,-35 L-5,-25 L-15,-25 L-15,-35 Z" fill="white"/>
+    
+    <!-- Inner B design -->
+    <path d="M-20,-30 L-20,30 L-10,30 L-10,20 L0,20 L0,30 L10,30 L10,20 L20,20 L20,-20 L10,-20 L10,-30 L0,-30 L0,-20 L-10,-20 L-10,-30 Z" fill="#f7931a"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="100" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#f7931a">BitSacco</text>
+  <text x="100" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#666">WhatsApp Bot</text>
+</svg>

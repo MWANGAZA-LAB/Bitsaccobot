@@ -227,6 +227,24 @@ pub struct BitSaccoTransaction {
     pub updated_at: String,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MpesaStkPushRequest {
+    pub phone_number: String,
+    pub amount: f64,
+    pub currency: String,
+    pub account_reference: String,
+    pub transaction_desc: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MpesaStkPushResponse {
+    pub merchant_request_id: String,
+    pub checkout_request_id: String,
+    pub response_code: String,
+    pub response_description: String,
+    pub customer_message: String,
+}
+
 // BTC Service Types
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BtcPrice {

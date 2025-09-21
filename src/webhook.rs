@@ -142,6 +142,9 @@ pub async fn handle_webhook(
 }
 
 async fn process_text_message(state: AppState, phone_number: String, message: String) -> Result<()> {
+    // Validate that user is registered with BitSacco web app
+    validate_registered_user(&state, &phone_number).await?;
+    
     let command = BotCommand::parse(&message);
 
     match command {
@@ -167,12 +170,19 @@ async fn process_text_message(state: AppState, phone_number: String, message: St
         },
         BotCommand::Savings => match get_user_savings(&state, &phone_number).await {
             Ok(savings) => {
+                let total_kes: f64 = savings.iter().map(|s| s.amount).sum();
+                let total_sats = (total_kes * 100_000_000.0) as u64; // Convert KES to sats
+                
                 let message = format!(
-                    "💰 *Your Savings*\n\nTotal: {:.2} KES\n\nDetails:\n{}",
-                    savings.iter().map(|s| s.amount).sum::<f64>(),
+                    "💰 *Your Savings*\n\nTotal: {} sats ({:.2} KES)\n\nDetails:\n{}",
+                    total_sats,
+                    total_kes,
                     savings
                         .iter()
-                        .map(|s| format!("• {:.2} {} ({})", s.amount, s.currency, s.id))
+                        .map(|s| {
+                            let sats = (s.amount * 100_000_000.0) as u64;
+                            format!("• {} sats ({:.2} {}) - {}", sats, s.amount, s.currency, s.id)
+                        })
                         .collect::<Vec<_>>()
                         .join("\n")
                 );
@@ -245,11 +255,22 @@ async fn process_text_message(state: AppState, phone_number: String, message: St
         BotCommand::Deposit { amount, currency } => {
             validate_amount(amount)?;
             validate_currency(&currency)?;
+            
+            // Restrict deposits to KES only
+            if currency.to_uppercase() != "KES" {
+                let error_message = "❌ *Deposit Error*\n\nOnly KES deposits are supported. Please use KES currency for deposits.\n\nExample: `deposit 100 KES`";
+                state
+                    .whatsapp_service
+                    .send_error_message(&phone_number, &error_message)
+                    .await?;
+                return Ok(());
+            }
+            
             match create_deposit(&state, &phone_number, amount, &currency).await {
                 Ok(transaction) => {
                     let message = format!(
-                        "Deposit of {:.2} {} created successfully. Transaction ID: {}",
-                        amount, currency, transaction.id
+                        "💰 *M-Pesa Deposit Initiated!*\n\nAmount: {:.2} KES\nTransaction ID: {}\nStatus: {}\n\n📱 *M-Pesa STK Push sent to your phone!*\n\nPlease check your phone and enter your M-Pesa PIN to complete the deposit.",
+                        amount, transaction.id, transaction.status
                     );
                     state
                         .whatsapp_service
@@ -516,6 +537,23 @@ async fn process_voice_command(
     process_text_message(state.clone(), phone_number.to_string(), transcript.to_string()).await?;
 
     Ok(())
+}
+
+/// Validate that user is registered with BitSacco web app
+async fn validate_registered_user(
+    state: &AppState,
+    phone_number: &str,
+) -> Result<()> {
+    match state
+        .bitsacco_service
+        .get_user_by_phone(phone_number, &state.cache)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(_) => Err(AppError::Validation(
+            "❌ *Access Denied*\n\nYou must be registered with BitSacco web app to use this bot.\n\nPlease visit our website to create an account first.".to_string()
+        )),
+    }
 }
 
 async fn get_user_balance(state: &AppState, phone_number: &str) -> Result<(f64, f64, String)> {

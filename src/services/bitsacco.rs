@@ -3,7 +3,7 @@ use crate::{
     error::{AppError, Result},
     types::{
         BitSaccoBtcBalance, BitSaccoChama, BitSaccoChamaContribution, BitSaccoChamaShare, 
-        BitSaccoSavings, BitSaccoTransaction, BitSaccoUser,
+        BitSaccoSavings, BitSaccoTransaction, BitSaccoUser, MpesaStkPushRequest, MpesaStkPushResponse,
     },
 };
 use reqwest::Client;
@@ -185,6 +185,12 @@ impl BitSaccoService {
         amount: f64,
         currency: &str,
     ) -> Result<BitSaccoTransaction> {
+        // For KES deposits, use M-Pesa STK Push
+        if currency.to_uppercase() == "KES" {
+            return self.create_mpesa_deposit(user_id, amount).await;
+        }
+
+        // For other currencies, use regular deposit
         let payload = json!({
             "user_id": user_id,
             "type": "deposit",
@@ -194,6 +200,53 @@ impl BitSaccoService {
         });
 
         self.make_post_request("transactions", &payload).await
+    }
+
+    /// Create M-Pesa STK Push deposit for KES
+    pub async fn create_mpesa_deposit(
+        &self,
+        user_id: &str,
+        amount: f64,
+    ) -> Result<BitSaccoTransaction> {
+        // First, get user details to get phone number
+        let user = self.get_user_by_id(user_id).await?;
+        
+        // Create M-Pesa STK Push request
+        let stk_request = MpesaStkPushRequest {
+            phone_number: user.phone_number.clone(),
+            amount,
+            currency: "KES".to_string(),
+            account_reference: format!("BITSACCO_{}", user_id),
+            transaction_desc: format!("BitSacco deposit of {} KES", amount),
+        };
+
+        // Send STK Push request to BitSacco API
+        let stk_response: MpesaStkPushResponse = self.make_post_request("mpesa/stk-push", &stk_request).await?;
+
+        // Create transaction record
+        let payload = json!({
+            "user_id": user_id,
+            "amount": amount,
+            "currency": "KES",
+            "type": "deposit",
+            "status": "pending",
+            "payment_method": "mpesa",
+            "external_reference": stk_response.checkout_request_id,
+            "metadata": {
+                "merchant_request_id": stk_response.merchant_request_id,
+                "checkout_request_id": stk_response.checkout_request_id,
+                "response_code": stk_response.response_code,
+                "response_description": stk_response.response_description
+            }
+        });
+
+        self.make_post_request("transactions", &payload).await
+    }
+
+    /// Get user by ID (helper method for M-Pesa integration)
+    async fn get_user_by_id(&self, user_id: &str) -> Result<BitSaccoUser> {
+        let endpoint = format!("users/{}", user_id);
+        self.make_request(&endpoint).await
     }
 
     pub async fn create_withdrawal(
