@@ -252,7 +252,7 @@ async fn process_text_message(state: AppState, phone_number: String, message: St
                     .await?;
             }
         },
-        BotCommand::Deposit { amount, currency } => {
+        BotCommand::Deposit { amount, currency, method } => {
             validate_amount(amount)?;
             validate_currency(&currency)?;
             
@@ -266,33 +266,62 @@ async fn process_text_message(state: AppState, phone_number: String, message: St
                 return Ok(());
             }
             
-            match create_deposit(&state, &phone_number, amount, &currency).await {
-                Ok(transaction) => {
-                    let message = format!(
-                        "💰 *M-Pesa Deposit Initiated!*\n\nAmount: {:.2} KES\nTransaction ID: {}\nStatus: {}\n\n📱 *M-Pesa STK Push sent to your phone!*\n\nPlease check your phone and enter your M-Pesa PIN to complete the deposit.",
-                        amount, transaction.id, transaction.status
-                    );
-                    state
-                        .whatsapp_service
-                        .send_success_message(&phone_number, &message)
-                        .await?;
+            let payment_method = method.as_deref().unwrap_or("mpesa");
+            
+            match payment_method {
+                "lightning" => {
+                    match create_lightning_deposit(&state, &phone_number, amount, &currency).await {
+                        Ok(lightning_response) => {
+                            let message = format!(
+                                "⚡ *Lightning Deposit Initiated!*\n\nAmount: {:.2} KES\nPayment Request: {}\n\n📱 *Scan the QR code or copy the payment request to your Lightning wallet to complete the deposit.*",
+                                amount, lightning_response.payment_request
+                            );
+                            state
+                                .whatsapp_service
+                                .send_success_message(&phone_number, &message)
+                                .await?;
+                        }
+                        Err(e) => {
+                            state
+                                .whatsapp_service
+                                .send_error_message(&phone_number, &e.to_string())
+                                .await?;
+                        }
+                    }
                 }
-                Err(e) => {
-                    state
-                        .whatsapp_service
-                        .send_error_message(&phone_number, &e.to_string())
-                        .await?;
+                _ => {
+                    match create_deposit(&state, &phone_number, amount, &currency).await {
+                        Ok(transaction) => {
+                            let message = format!(
+                                "💰 *M-Pesa Deposit Initiated!*\n\nAmount: {:.2} KES\nTransaction ID: {}\nStatus: {}\n\n📱 *M-Pesa STK Push sent to your phone!*\n\nPlease check your phone and enter your M-Pesa PIN to complete the deposit.",
+                                amount, transaction.id, transaction.status
+                            );
+                            state
+                                .whatsapp_service
+                                .send_success_message(&phone_number, &message)
+                                .await?;
+                        }
+                        Err(e) => {
+                            state
+                                .whatsapp_service
+                                .send_error_message(&phone_number, &e.to_string())
+                                .await?;
+                        }
+                    }
                 }
             }
         }
-        BotCommand::Withdraw { amount, currency } => {
+        BotCommand::Withdraw { amount, currency, method } => {
             validate_amount(amount)?;
             validate_currency(&currency)?;
+            
+            let payment_method = method.as_deref().unwrap_or("mpesa");
+            
             match create_withdrawal(&state, &phone_number, amount, &currency).await {
                 Ok(transaction) => {
                     let message = format!(
-                        "Withdrawal of {:.2} {} created successfully. Transaction ID: {}",
-                        amount, currency, transaction.id
+                        "💰 *Withdrawal Initiated!*\n\nAmount: {:.2} {}\nTransaction ID: {}\nStatus: {}\n\n📱 *Withdrawal will be processed.*",
+                        amount, currency, transaction.id, transaction.status
                     );
                     state
                         .whatsapp_service
@@ -409,6 +438,165 @@ async fn process_text_message(state: AppState, phone_number: String, message: St
                             .send_message(&phone_number, &message)
                             .await?;
                     }
+                }
+                Err(e) => {
+                    state
+                        .whatsapp_service
+                        .send_error_message(&phone_number, &e.to_string())
+                        .await?;
+                }
+            }
+        },
+        BotCommand::Membership => {
+            match get_membership_shares(&state, &phone_number).await {
+                Ok(shares) => {
+                    let message = format!(
+                        "🏛️ *BitSacco Membership*\n\nShares Owned: {}\nTotal Investment: {:.2} {}\n\nUse `buy shares <count>` to purchase more shares.\nUse `share history` to view your purchase history.",
+                        shares.shares_count, shares.total_investment, shares.currency
+                    );
+                    state
+                        .whatsapp_service
+                        .send_message(&phone_number, &message)
+                        .await?;
+                }
+                Err(e) => {
+                    state
+                        .whatsapp_service
+                        .send_error_message(&phone_number, &e.to_string())
+                        .await?;
+                }
+            }
+        },
+        BotCommand::BuyShares { count, method } => {
+            let payment_method = method.as_deref().unwrap_or("mpesa");
+            match buy_membership_shares(&state, &phone_number, count, payment_method).await {
+                Ok(purchase) => {
+                    let message = format!(
+                        "🎯 *Share Purchase Initiated!*\n\nShares: {}\nAmount: {:.2} {}\nPayment Method: {}\nTransaction ID: {}\nStatus: {}\n\nYour shares will be added to your account once payment is confirmed.",
+                        count, purchase.amount, purchase.currency, payment_method, purchase.id, purchase.status
+                    );
+                    state
+                        .whatsapp_service
+                        .send_success_message(&phone_number, &message)
+                        .await?;
+                }
+                Err(e) => {
+                    state
+                        .whatsapp_service
+                        .send_error_message(&phone_number, &e.to_string())
+                        .await?;
+                }
+            }
+        },
+        BotCommand::ShareHistory => {
+            match get_share_history(&state, &phone_number).await {
+                Ok(history) => {
+                    if history.is_empty() {
+                        let message = "📊 *Share History*\n\nNo share purchases found.";
+                        state
+                            .whatsapp_service
+                            .send_message(&phone_number, &message)
+                            .await?;
+                    } else {
+                        let message = format!(
+                            "📊 *Share Purchase History*\n\n{}",
+                            history
+                                .iter()
+                                .map(|p| format!(
+                                    "• {} shares - {:.2} {} ({})\n  Date: {}\n  Status: {}",
+                                    p.shares_count, p.amount, p.currency, p.payment_method, 
+                                    p.created_at, p.status
+                                ))
+                                .collect::<Vec<_>>()
+                                .join("\n\n")
+                        );
+                        state
+                            .whatsapp_service
+                            .send_message(&phone_number, &message)
+                            .await?;
+                    }
+                }
+                Err(e) => {
+                    state
+                        .whatsapp_service
+                        .send_error_message(&phone_number, &e.to_string())
+                        .await?;
+                }
+            }
+        },
+        BotCommand::History => {
+            match get_transaction_history(&state, &phone_number).await {
+                Ok(transactions) => {
+                    if transactions.is_empty() {
+                        let message = "📋 *Transaction History*\n\nNo transactions found.";
+                        state
+                            .whatsapp_service
+                            .send_message(&phone_number, &message)
+                            .await?;
+                    } else {
+                        let recent_transactions: Vec<_> = transactions.iter().take(5).collect();
+                        let message = format!(
+                            "📋 *Recent Transactions*\n\n{}",
+                            recent_transactions
+                                .iter()
+                                .map(|t| format!(
+                                    "• {} - {:.2} {} ({})\n  Type: {}\n  Status: {}\n  Date: {}",
+                                    t.id, t.amount, t.currency, 
+                                    t.payment_method.as_deref().unwrap_or("internal"), 
+                                    t.r#type, t.status, t.created_at
+                                ))
+                                .collect::<Vec<_>>()
+                                .join("\n\n")
+                        );
+                        state
+                            .whatsapp_service
+                            .send_message(&phone_number, &message)
+                            .await?;
+                    }
+                }
+                Err(e) => {
+                    state
+                        .whatsapp_service
+                        .send_error_message(&phone_number, &e.to_string())
+                        .await?;
+                }
+            }
+        },
+        BotCommand::LightningDeposit { amount, currency } => {
+            validate_amount(amount)?;
+            validate_currency(&currency)?;
+            match create_lightning_deposit(&state, &phone_number, amount, &currency).await {
+                Ok(lightning_response) => {
+                    let message = format!(
+                        "⚡ *Lightning Deposit Initiated!*\n\nAmount: {:.2} {}\nPayment Request: {}\n\n📱 *Scan the QR code or copy the payment request to your Lightning wallet to complete the deposit.*",
+                        amount, currency, lightning_response.payment_request
+                    );
+                    state
+                        .whatsapp_service
+                        .send_success_message(&phone_number, &message)
+                        .await?;
+                }
+                Err(e) => {
+                    state
+                        .whatsapp_service
+                        .send_error_message(&phone_number, &e.to_string())
+                        .await?;
+                }
+            }
+        },
+        BotCommand::LightningWithdraw { amount, currency } => {
+            validate_amount(amount)?;
+            validate_currency(&currency)?;
+            match create_withdrawal(&state, &phone_number, amount, &currency).await {
+                Ok(transaction) => {
+                    let message = format!(
+                        "⚡ *Lightning Withdrawal Initiated!*\n\nAmount: {:.2} {}\nTransaction ID: {}\nStatus: {}\n\n📱 *Withdrawal will be processed via Lightning Network.*",
+                        amount, currency, transaction.id, transaction.status
+                    );
+                    state
+                        .whatsapp_service
+                        .send_success_message(&phone_number, &message)
+                        .await?;
                 }
                 Err(e) => {
                     state
@@ -613,23 +801,6 @@ async fn create_deposit(
         .await
 }
 
-async fn create_withdrawal(
-    state: &AppState,
-    phone_number: &str,
-    amount: f64,
-    currency: &str,
-) -> Result<crate::types::BitSaccoTransaction> {
-    let user = state
-        .bitsacco_service
-        .get_user_by_phone(phone_number, &state.cache)
-        .await?;
-
-    state
-        .bitsacco_service
-        .create_withdrawal(&user.id, amount, currency)
-        .await
-}
-
 async fn create_transfer(
     state: &AppState,
     phone_number: &str,
@@ -709,6 +880,102 @@ async fn get_user_chama_shares(
     state
         .bitsacco_service
         .get_user_chama_shares(&user.id, chama_id)
+        .await
+}
+
+async fn get_membership_shares(
+    state: &AppState,
+    phone_number: &str,
+) -> Result<crate::types::BitSaccoMembershipShare> {
+    let user = state
+        .bitsacco_service
+        .get_user_by_phone(phone_number, &state.cache)
+        .await?;
+
+    state
+        .bitsacco_service
+        .get_membership_shares(&user.id)
+        .await
+}
+
+async fn buy_membership_shares(
+    state: &AppState,
+    phone_number: &str,
+    count: u32,
+    payment_method: &str,
+) -> Result<crate::types::BitSaccoSharePurchase> {
+    let user = state
+        .bitsacco_service
+        .get_user_by_phone(phone_number, &state.cache)
+        .await?;
+
+    state
+        .bitsacco_service
+        .buy_membership_shares(&user.id, count, payment_method)
+        .await
+}
+
+async fn get_share_history(
+    state: &AppState,
+    phone_number: &str,
+) -> Result<Vec<crate::types::BitSaccoSharePurchase>> {
+    let user = state
+        .bitsacco_service
+        .get_user_by_phone(phone_number, &state.cache)
+        .await?;
+
+    state
+        .bitsacco_service
+        .get_share_history(&user.id)
+        .await
+}
+
+async fn get_transaction_history(
+    state: &AppState,
+    phone_number: &str,
+) -> Result<Vec<crate::types::BitSaccoTransaction>> {
+    let user = state
+        .bitsacco_service
+        .get_user_by_phone(phone_number, &state.cache)
+        .await?;
+
+    state
+        .bitsacco_service
+        .get_transaction_history(&user.id)
+        .await
+}
+
+async fn create_lightning_deposit(
+    state: &AppState,
+    phone_number: &str,
+    amount: f64,
+    currency: &str,
+) -> Result<crate::types::LightningPaymentResponse> {
+    let user = state
+        .bitsacco_service
+        .get_user_by_phone(phone_number, &state.cache)
+        .await?;
+
+    state
+        .bitsacco_service
+        .create_lightning_deposit(&user.id, amount, currency)
+        .await
+}
+
+async fn create_withdrawal(
+    state: &AppState,
+    phone_number: &str,
+    amount: f64,
+    currency: &str,
+) -> Result<crate::types::BitSaccoTransaction> {
+    let user = state
+        .bitsacco_service
+        .get_user_by_phone(phone_number, &state.cache)
+        .await?;
+
+    state
+        .bitsacco_service
+        .create_withdrawal(&user.id, amount, currency)
         .await
 }
 

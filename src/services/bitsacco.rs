@@ -4,6 +4,8 @@ use crate::{
     types::{
         BitSaccoBtcBalance, BitSaccoChama, BitSaccoChamaContribution, BitSaccoChamaShare, 
         BitSaccoSavings, BitSaccoTransaction, BitSaccoUser, MpesaStkPushRequest, MpesaStkPushResponse,
+        BitSaccoMembershipShare, BitSaccoSharePurchase, LightningPaymentRequest, LightningPaymentResponse,
+        WithdrawalRequest, WithdrawalResponse,
     },
 };
 use reqwest::Client;
@@ -363,5 +365,88 @@ impl BitSaccoService {
     pub async fn get_chama_details(&self, chama_id: &str) -> Result<BitSaccoChama> {
         let endpoint = format!("chamas/{}", chama_id);
         self.make_request(&endpoint).await
+    }
+
+    // Membership Shares Methods
+    pub async fn get_membership_shares(&self, user_id: &str) -> Result<BitSaccoMembershipShare> {
+        let endpoint = format!("users/{}/membership-shares", user_id);
+        self.make_request(&endpoint).await
+    }
+
+    pub async fn buy_membership_shares(
+        &self,
+        user_id: &str,
+        shares_count: u32,
+        payment_method: &str,
+    ) -> Result<BitSaccoSharePurchase> {
+        let payload = json!({
+            "user_id": user_id,
+            "shares_count": shares_count,
+            "payment_method": payment_method,
+            "status": "pending"
+        });
+
+        self.make_post_request("membership/buy-shares", &payload).await
+    }
+
+    pub async fn get_share_history(&self, user_id: &str) -> Result<Vec<BitSaccoSharePurchase>> {
+        let endpoint = format!("users/{}/share-history", user_id);
+        self.make_request(&endpoint).await
+    }
+
+    // Enhanced Transaction Methods
+    pub async fn get_transaction_history(&self, user_id: &str) -> Result<Vec<BitSaccoTransaction>> {
+        let endpoint = format!("users/{}/transactions", user_id);
+        self.make_request(&endpoint).await
+    }
+
+    // Lightning Network Methods
+    pub async fn create_lightning_payment(
+        &self,
+        user_id: &str,
+        amount: f64,
+        currency: &str,
+        description: &str,
+    ) -> Result<LightningPaymentResponse> {
+        let payload = LightningPaymentRequest {
+            amount,
+            currency: currency.to_string(),
+            description: description.to_string(),
+            user_id: user_id.to_string(),
+        };
+
+        self.make_post_request("lightning/create-payment", &payload).await
+    }
+
+    // Withdrawal Methods
+    pub async fn create_withdrawal_enhanced(
+        &self,
+        user_id: &str,
+        amount: f64,
+        currency: &str,
+        payment_method: &str,
+        phone_number: Option<&str>,
+    ) -> Result<WithdrawalResponse> {
+        let payload = WithdrawalRequest {
+            user_id: user_id.to_string(),
+            amount,
+            currency: currency.to_string(),
+            payment_method: payment_method.to_string(),
+            phone_number: phone_number.map(|s| s.to_string()),
+            description: None,
+        };
+
+        self.make_post_request("withdrawals", &payload).await
+    }
+
+    // Enhanced Deposit with Lightning Support
+    pub async fn create_lightning_deposit(
+        &self,
+        user_id: &str,
+        amount: f64,
+        currency: &str,
+    ) -> Result<LightningPaymentResponse> {
+        let description = format!("BitSacco deposit of {} {}", amount, currency);
+        self.create_lightning_payment(user_id, amount, currency, &description).await
     }
 }

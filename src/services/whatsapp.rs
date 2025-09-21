@@ -135,21 +135,40 @@ impl WhatsAppService {
     pub async fn send_help_message(&self, to: &str) -> Result<()> {
         let help_text = r#"🤖 *BitSacco WhatsApp Bot Help*
 
-*Available Commands:*
+*Basic Commands:*
 • `help` - Show this help message
-• `balance` - Check your savings balance
+• `balance` - Check your total balance in sats
 • `savings` - View your savings details
-• `chama` - View your chama groups
-• `btc` - Get current Bitcoin price
-• `deposit <amount> <currency>` - Make a deposit
-• `withdraw <amount> <currency>` - Make a withdrawal
-• `transfer <amount> <currency> <phone>` - Transfer to another user
+• `bitcoin` - Get current Bitcoin price
+
+*Personal Savings:*
+• `deposit <amount> KES [mpesa|lightning]` - Make a deposit
+• `withdraw <amount> KES [mpesa|lightning]` - Make a withdrawal
+• `history` - View transaction history
 
 *Chama Management:*
-• `create chama <name>` - Create a new chama group
-• `contribute chama <chama_id> <amount> <currency>` - Contribute to chama shares
-• `shares balance` - View your chama shares balance
-• `shares balance <chama_id>` - View shares for specific chama
+• `chama` - View your chama groups
+• `create chama <name>` - Create a new chama
+• `contribute chama <id> <amount> <currency>` - Contribute to chama
+• `shares balance` - View your chama shares
+
+*Membership Shares:*
+• `membership` - View your BitSacco membership shares
+• `buy shares <count> [mpesa|lightning]` - Purchase membership shares
+• `share history` - View share purchase history
+
+*Lightning Network:*
+• `lightning deposit <amount> KES` - Deposit via Lightning
+• `lightning withdraw <amount> KES` - Withdraw via Lightning
+
+*Examples:*
+• `deposit 100 KES mpesa`
+• `deposit 50 KES lightning`
+• `buy shares 10 mpesa`
+• `create chama Investment Club`
+• `contribute chama CH123 50 USD`
+
+*Note:* All balances are displayed in Satoshis (sats) for Bitcoin precision.
 
 *Voice Commands:*
 🎤 You can also send voice messages with commands like:

@@ -155,6 +155,7 @@ pub struct BitSaccoUser {
     pub phone_number: String,
     pub name: Option<String>,
     pub email: Option<String>,
+    pub mpesa_phone: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -215,14 +216,18 @@ pub struct BitSaccoBtcBalance {
     pub last_updated: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BitSaccoTransaction {
     pub id: String,
     pub user_id: String,
-    pub r#type: String, // "deposit", "withdrawal", "transfer"
+    pub r#type: String, // "deposit", "withdrawal", "transfer", "chama_contribution", "share_purchase"
     pub amount: f64,
     pub currency: String,
     pub status: String, // "pending", "completed", "failed"
+    pub payment_method: Option<String>, // "mpesa", "lightning", "internal"
+    pub external_reference: Option<String>,
+    pub chama_id: Option<String>,
+    pub description: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -243,6 +248,69 @@ pub struct MpesaStkPushResponse {
     pub response_code: String,
     pub response_description: String,
     pub customer_message: String,
+}
+
+// BitSacco Membership Shares
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct BitSaccoMembershipShare {
+    pub id: String,
+    pub user_id: String,
+    pub shares_count: u32,
+    pub total_investment: f64,
+    pub currency: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct BitSaccoSharePurchase {
+    pub id: String,
+    pub user_id: String,
+    pub shares_count: u32,
+    pub amount: f64,
+    pub currency: String,
+    pub payment_method: String, // "mpesa" or "lightning"
+    pub status: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+// Enhanced Transaction Types - Updated existing BitSaccoTransaction
+
+// Lightning Network Payment
+#[derive(Debug, Deserialize, Serialize)]
+pub struct LightningPaymentRequest {
+    pub amount: f64,
+    pub currency: String,
+    pub description: String,
+    pub user_id: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct LightningPaymentResponse {
+    pub payment_request: String,
+    pub payment_hash: String,
+    pub expires_at: String,
+    pub status: String,
+}
+
+// Withdrawal Request
+#[derive(Debug, Deserialize, Serialize)]
+pub struct WithdrawalRequest {
+    pub user_id: String,
+    pub amount: f64,
+    pub currency: String,
+    pub payment_method: String, // "mpesa" or "lightning"
+    pub phone_number: Option<String>,
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct WithdrawalResponse {
+    pub id: String,
+    pub status: String,
+    pub transaction_id: String,
+    pub message: String,
 }
 
 // BTC Service Types
@@ -273,10 +341,12 @@ pub enum BotCommand {
     Deposit {
         amount: f64,
         currency: String,
+        method: Option<String>,
     },
     Withdraw {
         amount: f64,
         currency: String,
+        method: Option<String>,
     },
     Transfer {
         amount: f64,
@@ -294,6 +364,24 @@ pub enum BotCommand {
     },
     SharesBalance {
         chama_id: Option<String>,
+    },
+    // New Membership Commands
+    Membership,
+    BuyShares { 
+        count: u32, 
+        method: Option<String> 
+    },
+    ShareHistory,
+    // Transaction History
+    History,
+    // Lightning Network
+    LightningDeposit { 
+        amount: f64, 
+        currency: String 
+    },
+    LightningWithdraw { 
+        amount: f64, 
+        currency: String 
     },
     VoiceCommand {
         transcript: String,
@@ -316,25 +404,37 @@ impl BotCommand {
         } else if message == "btc" || message == "bitcoin" || message == "/btc" {
             BotCommand::BtcPrice
         } else if message.starts_with("deposit ") {
-            // Parse deposit command: "deposit 100 USD"
+            // Parse deposit command: "deposit 100 KES mpesa" or "deposit 100 KES lightning"
             let parts: Vec<&str> = message.split_whitespace().collect();
             if parts.len() >= 3 {
                 if let Ok(amount) = parts[1].parse::<f64>() {
+                    let method = if parts.len() > 3 {
+                        Some(parts[3].to_lowercase())
+                    } else {
+                        None
+                    };
                     return BotCommand::Deposit {
                         amount,
                         currency: parts[2].to_uppercase(),
+                        method,
                     };
                 }
             }
             BotCommand::Unknown(message)
         } else if message.starts_with("withdraw ") {
-            // Parse withdraw command: "withdraw 50 USD"
+            // Parse withdraw command: "withdraw 50 KES mpesa" or "withdraw 50 KES lightning"
             let parts: Vec<&str> = message.split_whitespace().collect();
             if parts.len() >= 3 {
                 if let Ok(amount) = parts[1].parse::<f64>() {
+                    let method = if parts.len() > 3 {
+                        Some(parts[3].to_lowercase())
+                    } else {
+                        None
+                    };
                     return BotCommand::Withdraw {
                         amount,
                         currency: parts[2].to_uppercase(),
+                        method,
                     };
                 }
             }
@@ -385,6 +485,47 @@ impl BotCommand {
             } else {
                 BotCommand::SharesBalance { chama_id: None }
             }
+        } else if message == "membership" || message == "/membership" {
+            BotCommand::Membership
+        } else if message.starts_with("buy shares ") {
+            let parts: Vec<&str> = message.split_whitespace().collect();
+            if parts.len() >= 3 {
+                if let Ok(count) = parts[2].parse::<u32>() {
+                    let method = if parts.len() > 3 {
+                        Some(parts[3].to_lowercase())
+                    } else {
+                        None
+                    };
+                    return BotCommand::BuyShares { count, method };
+                }
+            }
+            BotCommand::Unknown(message)
+        } else if message == "share history" || message == "/share history" {
+            BotCommand::ShareHistory
+        } else if message == "history" || message == "/history" {
+            BotCommand::History
+        } else if message.starts_with("lightning deposit ") {
+            let parts: Vec<&str> = message.split_whitespace().collect();
+            if parts.len() >= 4 {
+                if let Ok(amount) = parts[2].parse::<f64>() {
+                    return BotCommand::LightningDeposit {
+                        amount,
+                        currency: parts[3].to_uppercase(),
+                    };
+                }
+            }
+            BotCommand::Unknown(message)
+        } else if message.starts_with("lightning withdraw ") {
+            let parts: Vec<&str> = message.split_whitespace().collect();
+            if parts.len() >= 4 {
+                if let Ok(amount) = parts[2].parse::<f64>() {
+                    return BotCommand::LightningWithdraw {
+                        amount,
+                        currency: parts[3].to_uppercase(),
+                    };
+                }
+            }
+            BotCommand::Unknown(message)
         } else {
             BotCommand::Unknown(message)
         }

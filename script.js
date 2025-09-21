@@ -366,8 +366,20 @@ document.addEventListener('DOMContentLoaded', function() {
             bot: "₿ Bitcoin Price: $45,230.50 USD<br>24h Change: +2.5% 📈<br>KES: 6,784,575.00 KES"
         },
         {
-            user: "deposit 100 KES",
+            user: "deposit 100 KES mpesa",
             bot: "💰 M-Pesa Deposit Initiated!<br><br>Amount: 100.00 KES<br>Transaction ID: TXN_789456<br>Status: pending<br><br>📱 M-Pesa STK Push sent to your phone!<br><br>Please check your phone and enter your M-Pesa PIN to complete the deposit."
+        },
+        {
+            user: "deposit 50 KES lightning",
+            bot: "⚡ Lightning Deposit Initiated!<br><br>Amount: 50.00 KES<br>Payment Request: lnbc500n1p0...<br><br>📱 Scan the QR code or copy the payment request to your Lightning wallet to complete the deposit."
+        },
+        {
+            user: "membership",
+            bot: "🏛️ BitSacco Membership<br><br>Shares Owned: 150<br>Total Investment: 1,500.00 USD<br><br>Use `buy shares <count>` to purchase more shares.<br>Use `share history` to view your purchase history."
+        },
+        {
+            user: "buy shares 10 mpesa",
+            bot: "🎯 Share Purchase Initiated!<br><br>Shares: 10<br>Amount: 100.00 USD<br>Payment Method: mpesa<br>Transaction ID: SHARE_789<br>Status: pending<br><br>Your shares will be added to your account once payment is confirmed."
         },
         {
             user: "chama",
@@ -378,16 +390,12 @@ document.addEventListener('DOMContentLoaded', function() {
             bot: "📊 Your Chama Shares<br><br>• Chama: Investment Club CH123<br>&nbsp;&nbsp;Shares: 25<br>&nbsp;&nbsp;Total Contribution: 2,500.00 USD<br>&nbsp;&nbsp;Last Updated: 2024-01-10<br><br>• Chama: Savings Group CH456<br>&nbsp;&nbsp;Shares: 12<br>&nbsp;&nbsp;Total Contribution: 1,200.00 USD<br>&nbsp;&nbsp;Last Updated: 2024-01-12"
         },
         {
-            user: "savings",
-            bot: "💰 Your Savings<br><br>Total: 125,050,000 sats (1,250.50 KES)<br><br>Details:<br>• 75,000,000 sats (750.00 KES) - SAV_001<br>• 50,050,000 sats (500.50 KES) - SAV_002"
+            user: "history",
+            bot: "📋 Recent Transactions<br><br>• TXN_001 - 100.00 KES (mpesa)<br>&nbsp;&nbsp;Type: deposit<br>&nbsp;&nbsp;Status: completed<br>&nbsp;&nbsp;Date: 2024-01-15<br><br>• TXN_002 - 50.00 USD (lightning)<br>&nbsp;&nbsp;Type: share_purchase<br>&nbsp;&nbsp;Status: completed<br>&nbsp;&nbsp;Date: 2024-01-14"
         },
         {
-            user: "create chama Tech Investment",
-            bot: "🎉 Chama Created Successfully!<br><br>Name: Tech Investment<br>ID: CH789<br>Description: No description<br><br>Share this ID with members: CH789"
-        },
-        {
-            user: "contribute chama CH789 50 USD",
-            bot: "💰 Chama Contribution Successful!<br><br>Amount: 50.00 USD<br>Shares Purchased: 5<br>Chama ID: CH789<br>Transaction ID: CONT_456"
+            user: "withdraw 200 KES lightning",
+            bot: "⚡ Lightning Withdrawal Initiated!<br><br>Amount: 200.00 KES<br>Transaction ID: WTH_456<br>Status: pending<br><br>📱 Withdrawal will be processed via Lightning Network."
         }
     ];
 
