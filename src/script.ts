@@ -145,7 +145,8 @@ function animateBitSaccoChat(): void {
         chatContainer.appendChild(welcomeMessage);
     }
     
-    const message: ChatMessage = chatMessages[currentMessageIndex];
+    const message: ChatMessage | undefined = chatMessages[currentMessageIndex];
+    if (!message) return;
     
     // Add user message
     setTimeout((): void => {
@@ -214,7 +215,7 @@ function toggleMobileMenu(): void {
 
 // Copy code to clipboard function with proper typing
 function copyCode(button: HTMLElement): void {
-    const codeBlock: HTMLElement | null = button.parentElement?.querySelector('code');
+    const codeBlock: HTMLElement | null = button.parentElement?.querySelector('code') || null;
     if (codeBlock) {
         const text: string = codeBlock.textContent || '';
         navigator.clipboard.writeText(text).then((): void => {
