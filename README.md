@@ -447,7 +447,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Medium Term (Q2-Q3 2024)
 
-- [ ] Voice message support
+- [ ] Voice message support ✅
 - [ ] Advanced analytics and reporting
 - [ ] Integration with more cryptocurrency exchanges
 - [ ] Mobile app integration
