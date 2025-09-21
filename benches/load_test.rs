@@ -9,6 +9,7 @@ fn create_test_config() -> AppConfig {
         whatsapp_access_token: "test_token".to_string(),
         whatsapp_phone_number_id: "test_phone_id".to_string(),
         whatsapp_webhook_verify_token: "test_verify_token".to_string(),
+        whatsapp_api_base_url: "https://graph.facebook.com/v18.0".to_string(),
         bitsacco_api_base_url: "https://api.bitsacco.com".to_string(),
         bitsacco_api_token: "test_bitsacco_token".to_string(),
         server_host: "127.0.0.1".to_string(),
