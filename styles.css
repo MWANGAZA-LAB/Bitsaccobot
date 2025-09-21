@@ -123,63 +123,80 @@ body {
     align-items: center;
 }
 
-.hero-logo {
-    width: 120px;
-    height: 120px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    background: white;
-    padding: 0;
-    object-fit: contain;
-    object-position: center;
-    border: none;
+.bitsacco-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.3s ease;
+}
+
+.logo-emblem {
     position: relative;
-    overflow: hidden;
+    width: 60px;
+    height: 60px;
 }
 
-.hero-logo::before {
+.logo-circle {
+    width: 60px;
+    height: 60px;
+    border: 3px solid #20b2aa;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+
+.logo-knight {
+    width: 30px;
+    height: 30px;
+    position: relative;
+}
+
+.logo-knight::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, 
-        rgba(32, 178, 170, 0.1) 0%, 
-        rgba(32, 178, 170, 0.05) 50%, 
-        rgba(32, 178, 170, 0.1) 100%);
-    border-radius: 20px;
-    pointer-events: none;
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 10px solid #20b2aa;
 }
 
-.hero-logo::after {
+.logo-knight::after {
     content: '';
     position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, 
-        rgba(32, 178, 170, 0.3), 
-        rgba(64, 224, 208, 0.2), 
-        rgba(32, 178, 170, 0.3));
-    border-radius: 22px;
-    z-index: -1;
-    opacity: 0.6;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 3px;
+    background: #20b2aa;
+    border-radius: 1.5px;
 }
 
-.hero-logo:hover {
+.logo-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #20b2aa;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.bitsacco-logo:hover {
     transform: scale(1.05);
-    box-shadow: 0 15px 40px rgba(32, 178, 170, 0.4);
 }
 
-.hero-logo:hover::after {
-    opacity: 0.8;
-    background: linear-gradient(45deg, 
-        rgba(32, 178, 170, 0.5), 
-        rgba(64, 224, 208, 0.4), 
-        rgba(32, 178, 170, 0.5));
+.bitsacco-logo:hover .logo-circle {
+    box-shadow: 0 0 20px rgba(32, 178, 170, 0.5);
+}
+
+.bitsacco-logo:hover .logo-text {
+    text-shadow: 0 0 10px rgba(32, 178, 170, 0.5);
 }
 
 .bitcoin-price-card {
@@ -902,18 +919,24 @@ section {
         margin-bottom: 30px;
     }
     
-    .hero-logo {
-        width: 100px;
-        height: 100px;
-        border-radius: 16px;
+    .logo-emblem {
+        width: 50px;
+        height: 50px;
     }
     
-    .hero-logo::before {
-        border-radius: 16px;
+    .logo-circle {
+        width: 50px;
+        height: 50px;
     }
     
-    .hero-logo::after {
-        border-radius: 18px;
+    .logo-knight {
+        width: 25px;
+        height: 25px;
+    }
+    
+    .logo-text {
+        font-size: 1.5rem;
+        letter-spacing: 1px;
     }
     
     .bitcoin-price-card {
@@ -1006,18 +1029,24 @@ section {
         margin-bottom: 25px;
     }
     
-    .hero-logo {
-        width: 90px;
-        height: 90px;
-        border-radius: 14px;
+    .logo-emblem {
+        width: 45px;
+        height: 45px;
     }
     
-    .hero-logo::before {
-        border-radius: 14px;
+    .logo-circle {
+        width: 45px;
+        height: 45px;
     }
     
-    .hero-logo::after {
-        border-radius: 16px;
+    .logo-knight {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .logo-text {
+        font-size: 1.3rem;
+        letter-spacing: 0.5px;
     }
     
     .bitsacco-catchphrase {
