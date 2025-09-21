@@ -90,6 +90,7 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: [test, security]
+    if: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
     
     steps:
     - name: Checkout code
@@ -119,7 +120,7 @@ jobs:
   load-test:
     name: Load Testing
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [test, security]
     if: github.ref == 'refs/heads/develop'
     
     steps:
