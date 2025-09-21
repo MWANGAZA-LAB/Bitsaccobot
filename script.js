@@ -353,3 +353,91 @@ if (typeof module !== 'undefined' && module.exports) {
         animateChatMessages
     };
 }
+
+// BitSacco WhatsApp Bot Animated Chat
+document.addEventListener('DOMContentLoaded', function() {
+    const chatMessages = [
+        {
+            user: "balance",
+            bot: "💰 Your BitSacco Balance<br><br>Savings Balance: 125,050,000 sats<br>Bitcoin Balance: 2,500,000 sats<br><br>Total Balance: 127,550,000 sats<br><br>Last updated: 2024-01-15 14:30:25 UTC"
+        },
+        {
+            user: "bitcoin price",
+            bot: "₿ Bitcoin Price: $45,230.50 USD<br>24h Change: +2.5% 📈<br>KES: 6,784,575.00 KES"
+        },
+        {
+            user: "deposit 100 KES",
+            bot: "💰 M-Pesa Deposit Initiated!<br><br>Amount: 100.00 KES<br>Transaction ID: TXN_789456<br>Status: pending<br><br>📱 M-Pesa STK Push sent to your phone!<br><br>Please check your phone and enter your M-Pesa PIN to complete the deposit."
+        },
+        {
+            user: "chama",
+            bot: "🏦 Your Chama Groups<br><br>• Investment Club CH123<br>&nbsp;&nbsp;Members: 15<br>&nbsp;&nbsp;Your Shares: 25<br><br>• Savings Group CH456<br>&nbsp;&nbsp;Members: 8<br>&nbsp;&nbsp;Your Shares: 12"
+        },
+        {
+            user: "shares balance",
+            bot: "📊 Your Chama Shares<br><br>• Chama: Investment Club CH123<br>&nbsp;&nbsp;Shares: 25<br>&nbsp;&nbsp;Total Contribution: 2,500.00 USD<br>&nbsp;&nbsp;Last Updated: 2024-01-10<br><br>• Chama: Savings Group CH456<br>&nbsp;&nbsp;Shares: 12<br>&nbsp;&nbsp;Total Contribution: 1,200.00 USD<br>&nbsp;&nbsp;Last Updated: 2024-01-12"
+        },
+        {
+            user: "savings",
+            bot: "💰 Your Savings<br><br>Total: 125,050,000 sats (1,250.50 KES)<br><br>Details:<br>• 75,000,000 sats (750.00 KES) - SAV_001<br>• 50,050,000 sats (500.50 KES) - SAV_002"
+        },
+        {
+            user: "create chama Tech Investment",
+            bot: "🎉 Chama Created Successfully!<br><br>Name: Tech Investment<br>ID: CH789<br>Description: No description<br><br>Share this ID with members: CH789"
+        },
+        {
+            user: "contribute chama CH789 50 USD",
+            bot: "💰 Chama Contribution Successful!<br><br>Amount: 50.00 USD<br>Shares Purchased: 5<br>Chama ID: CH789<br>Transaction ID: CONT_456"
+        }
+    ];
+
+    let currentMessageIndex = 0;
+    let isAnimating = false;
+
+    function animateBitSaccoChat() {
+        const chatContainer = document.querySelector('.chat-messages');
+        if (!chatContainer || isAnimating) return;
+        
+        isAnimating = true;
+        
+        // Clear existing messages except welcome message
+        const welcomeMessage = chatContainer.querySelector('.message:first-child');
+        chatContainer.innerHTML = '';
+        if (welcomeMessage) {
+            chatContainer.appendChild(welcomeMessage);
+        }
+        
+        const message = chatMessages[currentMessageIndex];
+        
+        // Add user message
+        setTimeout(() => {
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user-message';
+            userMessage.innerHTML = `<div class="message-content">${message.user}</div>`;
+            chatContainer.appendChild(userMessage);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 500);
+        
+        // Add bot response
+        setTimeout(() => {
+            const botMessage = document.createElement('div');
+            botMessage.className = 'message bot-message';
+            botMessage.innerHTML = `<div class="message-content">${message.bot}</div>`;
+            chatContainer.appendChild(botMessage);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 1500);
+        
+        // Move to next message
+        setTimeout(() => {
+            currentMessageIndex = (currentMessageIndex + 1) % chatMessages.length;
+            isAnimating = false;
+        }, 3000);
+    }
+
+    // Start BitSacco chat animation when page loads
+    setTimeout(() => {
+        animateBitSaccoChat();
+        // Repeat every 4 seconds
+        setInterval(animateBitSaccoChat, 4000);
+    }, 2000);
+});
