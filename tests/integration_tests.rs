@@ -123,8 +123,9 @@ async fn test_bitsacco_service_user_lookup() {
         )
         .create();
 
+    let cache = bitsacco_whatsapp_bot::cache::AppCache::new(bitsacco_whatsapp_bot::cache::CacheConfig::default());
     let user = bitsacco_service
-        .get_user_by_phone("+254712345678")
+        .get_user_by_phone("+254712345678", &cache)
         .await
         .unwrap();
 
@@ -168,7 +169,8 @@ async fn test_bitsacco_service_savings() {
         )
         .create();
 
-    let savings = bitsacco_service.get_user_savings("user123").await.unwrap();
+    let cache = bitsacco_whatsapp_bot::cache::AppCache::new(bitsacco_whatsapp_bot::cache::CacheConfig::default());
+    let savings = bitsacco_service.get_user_savings("user123", &cache).await.unwrap();
 
     assert_eq!(savings.len(), 2);
     assert_eq!(savings[0].amount, 1000.0);
@@ -199,7 +201,8 @@ async fn test_btc_service_price() {
         )
         .create();
 
-    let price = btc_service.get_btc_price_usd().await.unwrap();
+    let cache = bitsacco_whatsapp_bot::cache::AppCache::new(bitsacco_whatsapp_bot::cache::CacheConfig::default());
+    let price = btc_service.get_btc_price_usd(&cache).await.unwrap();
 
     assert_eq!(price.currency, "USD");
     assert_eq!(price.price, 50000.0);
@@ -259,7 +262,8 @@ async fn test_error_handling() {
         )
         .create();
 
-    let result = bitsacco_service.get_user_by_phone("invalid").await;
+    let cache = bitsacco_whatsapp_bot::cache::AppCache::new(bitsacco_whatsapp_bot::cache::CacheConfig::default());
+    let result = bitsacco_service.get_user_by_phone("invalid", &cache).await;
     assert!(result.is_err());
 }
 

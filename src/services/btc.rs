@@ -18,6 +18,9 @@ impl BtcService {
     pub fn new(config: &AppConfig) -> Result<Self> {
         let client = Client::builder()
             .timeout(std::time::Duration::from_secs(30))
+            .pool_max_idle_per_host(10)
+            .pool_idle_timeout(std::time::Duration::from_secs(90))
+            .connect_timeout(std::time::Duration::from_secs(10))
             .build()
             .map_err(|e| AppError::Internal(format!("Failed to create HTTP client: {}", e)))?;
 
@@ -71,10 +74,21 @@ impl BtcService {
         Ok(data)
     }
 
-    pub async fn get_btc_price(&self, currency: &str) -> Result<BtcPrice> {
-        // Try to get price from BitSacco API first (if it provides BTC prices)
-        // For now, we'll use CoinGecko as fallback
-        self.get_btc_price_from_coingecko(currency).await
+    pub async fn get_btc_price(&self, currency: &str, cache: &crate::cache::AppCache) -> Result<BtcPrice> {
+        // Try to get from cache first
+        if let Some(cached_price) = cache.get_btc_price(currency).await {
+            tracing::debug!("BTC price found in cache for currency: {}", currency);
+            return Ok(cached_price);
+        }
+
+        // If not in cache, fetch from API
+        let price = self.get_btc_price_from_coingecko(currency).await?;
+        
+        // Store in cache
+        cache.set_btc_price(currency, price.clone()).await;
+        tracing::debug!("BTC price cached for currency: {}", currency);
+        
+        Ok(price)
     }
 
     async fn get_btc_price_from_coingecko(&self, currency: &str) -> Result<BtcPrice> {
@@ -109,18 +123,18 @@ impl BtcService {
         }
     }
 
-    pub async fn get_btc_price_usd(&self) -> Result<BtcPrice> {
-        self.get_btc_price("usd").await
+    pub async fn get_btc_price_usd(&self, cache: &crate::cache::AppCache) -> Result<BtcPrice> {
+        self.get_btc_price("usd", cache).await
     }
 
     #[allow(dead_code)]
-    pub async fn get_btc_price_kes(&self) -> Result<BtcPrice> {
-        self.get_btc_price("kes").await
+    pub async fn get_btc_price_kes(&self, cache: &crate::cache::AppCache) -> Result<BtcPrice> {
+        self.get_btc_price("kes", cache).await
     }
 
-    pub async fn health_check(&self) -> Result<()> {
+    pub async fn health_check(&self, cache: &crate::cache::AppCache) -> Result<()> {
         // Try to get BTC price as a health check
-        match self.get_btc_price_usd().await {
+        match self.get_btc_price_usd(cache).await {
             Ok(_) => {
                 info!("BTC service health check passed");
                 Ok(())

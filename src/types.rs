@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::{
+    cache::AppCache,
+    circuit_breaker::ApiCircuitBreaker,
     config::AppConfig,
     services::{bitsacco::BitSaccoService, btc::BtcService, whatsapp::WhatsAppService},
 };
@@ -13,6 +15,8 @@ pub struct AppState {
     pub whatsapp_service: WhatsAppService,
     pub bitsacco_service: BitSaccoService,
     pub btc_service: BtcService,
+    pub cache: AppCache,
+    pub circuit_breaker: ApiCircuitBreaker,
 }
 
 // WhatsApp API Types
@@ -122,7 +126,7 @@ pub struct WhatsAppMessageResponse {
 }
 
 // BitSacco API Types
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BitSaccoUser {
     pub id: String,
     pub phone_number: String,
@@ -132,7 +136,7 @@ pub struct BitSaccoUser {
     pub updated_at: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BitSaccoSavings {
     pub id: String,
     pub user_id: String,
@@ -155,7 +159,7 @@ pub struct BitSaccoChama {
     pub updated_at: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BitSaccoBtcBalance {
     pub user_id: String,
     pub balance: f64,
@@ -176,7 +180,7 @@ pub struct BitSaccoTransaction {
 }
 
 // BTC Service Types
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BtcPrice {
     pub currency: String,
     pub price: f64,

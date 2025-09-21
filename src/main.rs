@@ -9,12 +9,18 @@ use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+mod cache;
+mod circuit_breaker;
 mod config;
 mod error;
+mod rate_limit;
 mod services;
 mod types;
+mod validation;
 mod webhook;
 
+use cache::AppCache;
+use circuit_breaker::ApiCircuitBreaker;
 use config::AppConfig;
 use services::{bitsacco::BitSaccoService, btc::BtcService, whatsapp::WhatsAppService};
 use types::AppState;
@@ -35,6 +41,12 @@ async fn main() -> Result<()> {
     let config = AppConfig::load()?;
     info!("Configuration loaded successfully");
 
+    // Initialize cache
+    let cache = AppCache::new(cache::CacheConfig::default());
+
+    // Initialize circuit breaker
+    let circuit_breaker = ApiCircuitBreaker::new(circuit_breaker::CircuitBreakerConfig::default());
+
     // Initialize services
     let whatsapp_service = WhatsAppService::new(&config)?;
     let bitsacco_service = BitSaccoService::new(&config)?;
@@ -45,6 +57,8 @@ async fn main() -> Result<()> {
         whatsapp_service,
         bitsacco_service,
         btc_service,
+        cache,
+        circuit_breaker,
     };
 
     // Build application

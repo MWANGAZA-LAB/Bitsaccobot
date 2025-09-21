@@ -20,6 +20,9 @@ impl BitSaccoService {
     pub fn new(config: &AppConfig) -> Result<Self> {
         let client = Client::builder()
             .timeout(std::time::Duration::from_secs(30))
+            .pool_max_idle_per_host(10)
+            .pool_idle_timeout(std::time::Duration::from_secs(90))
+            .connect_timeout(std::time::Duration::from_secs(10))
             .build()
             .map_err(|e| AppError::Internal(format!("Failed to create HTTP client: {}", e)))?;
 
@@ -110,14 +113,40 @@ impl BitSaccoService {
         Ok(data)
     }
 
-    pub async fn get_user_by_phone(&self, phone_number: &str) -> Result<BitSaccoUser> {
+    pub async fn get_user_by_phone(&self, phone_number: &str, cache: &crate::cache::AppCache) -> Result<BitSaccoUser> {
+        // Try to get from cache first
+        if let Some(cached_user) = cache.get_user(phone_number).await {
+            tracing::debug!("User found in cache: {}", phone_number);
+            return Ok(cached_user);
+        }
+
+        // If not in cache, fetch from API
         let endpoint = format!("users/phone/{}", phone_number);
-        self.make_request(&endpoint).await
+        let user: BitSaccoUser = self.make_request(&endpoint).await?;
+        
+        // Store in cache
+        cache.set_user(phone_number, user.clone()).await;
+        tracing::debug!("User cached: {}", phone_number);
+        
+        Ok(user)
     }
 
-    pub async fn get_user_savings(&self, user_id: &str) -> Result<Vec<BitSaccoSavings>> {
+    pub async fn get_user_savings(&self, user_id: &str, cache: &crate::cache::AppCache) -> Result<Vec<BitSaccoSavings>> {
+        // Try to get from cache first
+        if let Some(cached_savings) = cache.get_savings(user_id).await {
+            tracing::debug!("Savings found in cache for user: {}", user_id);
+            return Ok(cached_savings);
+        }
+
+        // If not in cache, fetch from API
         let endpoint = format!("users/{}/savings", user_id);
-        self.make_request(&endpoint).await
+        let savings: Vec<BitSaccoSavings> = self.make_request(&endpoint).await?;
+        
+        // Store in cache
+        cache.set_savings(user_id, savings.clone()).await;
+        tracing::debug!("Savings cached for user: {}", user_id);
+        
+        Ok(savings)
     }
 
     pub async fn get_user_chamas(&self, user_id: &str) -> Result<Vec<BitSaccoChama>> {
@@ -125,9 +154,22 @@ impl BitSaccoService {
         self.make_request(&endpoint).await
     }
 
-    pub async fn get_user_btc_balance(&self, user_id: &str) -> Result<BitSaccoBtcBalance> {
+    pub async fn get_user_btc_balance(&self, user_id: &str, cache: &crate::cache::AppCache) -> Result<BitSaccoBtcBalance> {
+        // Try to get from cache first
+        if let Some(cached_balance) = cache.get_btc_balance(user_id).await {
+            tracing::debug!("BTC balance found in cache for user: {}", user_id);
+            return Ok(cached_balance);
+        }
+
+        // If not in cache, fetch from API
         let endpoint = format!("users/{}/btc-balance", user_id);
-        self.make_request(&endpoint).await
+        let balance: BitSaccoBtcBalance = self.make_request(&endpoint).await?;
+        
+        // Store in cache
+        cache.set_btc_balance(user_id, balance.clone()).await;
+        tracing::debug!("BTC balance cached for user: {}", user_id);
+        
+        Ok(balance)
     }
 
     #[allow(dead_code)]
@@ -189,8 +231,8 @@ impl BitSaccoService {
         self.make_post_request("transactions", &payload).await
     }
 
-    pub async fn get_total_savings(&self, user_id: &str) -> Result<f64> {
-        let savings = self.get_user_savings(user_id).await?;
+    pub async fn get_total_savings(&self, user_id: &str, cache: &crate::cache::AppCache) -> Result<f64> {
+        let savings = self.get_user_savings(user_id, cache).await?;
         let total: f64 = savings.iter().map(|s| s.amount).sum();
         Ok(total)
     }

@@ -4,6 +4,7 @@ use crate::{
     types::{WhatsAppSendRequest, WhatsAppSendResponse, WhatsAppTextContent},
 };
 use reqwest::Client;
+use ring::hmac;
 use tracing::{error, info, warn};
 
 #[derive(Debug, Clone)]
@@ -19,6 +20,9 @@ impl WhatsAppService {
     pub fn new(config: &AppConfig) -> Result<Self> {
         let client = Client::builder()
             .timeout(std::time::Duration::from_secs(30))
+            .pool_max_idle_per_host(10)
+            .pool_idle_timeout(std::time::Duration::from_secs(90))
+            .connect_timeout(std::time::Duration::from_secs(10))
             .build()
             .map_err(|e| AppError::Internal(format!("Failed to create HTTP client: {}", e)))?;
 
@@ -42,6 +46,35 @@ impl WhatsAppService {
             );
             Err(AppError::Unauthorized)
         }
+    }
+
+    pub fn verify_webhook_signature(&self, payload: &str, signature: &str) -> Result<()> {
+        // WhatsApp uses HMAC-SHA256 for webhook signature verification
+        let key = hmac::Key::new(hmac::HMAC_SHA256, self.webhook_verify_token.as_bytes());
+        let expected_signature = hmac::sign(&key, payload.as_bytes());
+        let expected_hex = hex::encode(expected_signature.as_ref());
+        
+        // Remove 'sha256=' prefix if present
+        let provided_signature = signature.strip_prefix("sha256=").unwrap_or(signature);
+        
+        // Use constant-time comparison to prevent timing attacks
+        if expected_hex.len() == provided_signature.len() {
+            let expected_bytes = expected_hex.as_bytes();
+            let provided_bytes = provided_signature.as_bytes();
+            
+            let mut result = 0u8;
+            for (a, b) in expected_bytes.iter().zip(provided_bytes.iter()) {
+                result |= a ^ b;
+            }
+            
+            if result == 0 {
+                info!("Webhook signature verification successful");
+                return Ok(());
+            }
+        }
+        
+        warn!("Webhook signature verification failed");
+        Err(AppError::Unauthorized)
     }
 
     pub async fn send_message(&self, to: &str, message: &str) -> Result<WhatsAppSendResponse> {
