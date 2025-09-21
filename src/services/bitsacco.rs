@@ -2,7 +2,8 @@ use crate::{
     config::AppConfig,
     error::{AppError, Result},
     types::{
-        BitSaccoBtcBalance, BitSaccoChama, BitSaccoSavings, BitSaccoTransaction, BitSaccoUser,
+        BitSaccoBtcBalance, BitSaccoChama, BitSaccoChamaContribution, BitSaccoChamaShare, 
+        BitSaccoSavings, BitSaccoTransaction, BitSaccoUser,
     },
 };
 use reqwest::Client;
@@ -254,5 +255,60 @@ impl BitSaccoService {
             warn!("BitSacco API health check failed: {}", response.status());
             Err(AppError::BitSacco("Health check failed".to_string()))
         }
+    }
+
+    // Chama Management Methods
+    pub async fn create_chama(
+        &self,
+        user_id: &str,
+        name: &str,
+        description: Option<&str>,
+    ) -> Result<BitSaccoChama> {
+        let payload = json!({
+            "name": name,
+            "description": description,
+            "created_by": user_id,
+            "currency": "USD"
+        });
+
+        self.make_post_request("chamas", &payload).await
+    }
+
+    pub async fn contribute_to_chama(
+        &self,
+        user_id: &str,
+        chama_id: &str,
+        amount: f64,
+        currency: &str,
+    ) -> Result<BitSaccoChamaContribution> {
+        let payload = json!({
+            "user_id": user_id,
+            "chama_id": chama_id,
+            "amount": amount,
+            "currency": currency,
+            "shares_purchased": (amount / 10.0) as i32, // Assuming 1 share = $10
+            "status": "pending"
+        });
+
+        self.make_post_request("chama-contributions", &payload).await
+    }
+
+    pub async fn get_user_chama_shares(
+        &self,
+        user_id: &str,
+        chama_id: Option<&str>,
+    ) -> Result<Vec<BitSaccoChamaShare>> {
+        let endpoint = if let Some(chama_id) = chama_id {
+            format!("users/{}/chama-shares?chama_id={}", user_id, chama_id)
+        } else {
+            format!("users/{}/chama-shares", user_id)
+        };
+
+        self.make_request(&endpoint).await
+    }
+
+    pub async fn get_chama_details(&self, chama_id: &str) -> Result<BitSaccoChama> {
+        let endpoint = format!("chamas/{}", chama_id);
+        self.make_request(&endpoint).await
     }
 }

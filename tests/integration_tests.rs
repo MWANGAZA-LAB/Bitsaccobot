@@ -183,19 +183,20 @@ async fn test_btc_service_price() {
     let (config, mut server) = create_test_config().await;
     let btc_service = BtcService::new(&config).unwrap();
 
-    // Mock the API response - use regex to match any query parameters
+    // Mock the Coinbase API response
     let _m = server
         .mock(
             "GET",
-            mockito::Matcher::Regex(r"^/simple/price\?.*$".to_string()),
+            mockito::Matcher::Regex(r"^/prices/BTC-USD/spot.*$".to_string()),
         )
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(
             json!({
-                "bitcoin": {
-                    "usd": 50000.0,
-                    "usd_24h_change": 2.5
+                "data": {
+                    "amount": "50000.00",
+                    "base": "BTC",
+                    "currency": "USD"
                 }
             })
             .to_string(),
@@ -207,7 +208,7 @@ async fn test_btc_service_price() {
 
     assert_eq!(price.currency, "USD");
     assert_eq!(price.price, 50000.0);
-    assert_eq!(price.change_24h, 2.5);
+    assert_eq!(price.change_24h, 0.0); // Coinbase API doesn't provide 24h change in basic endpoint
 }
 
 #[tokio::test]

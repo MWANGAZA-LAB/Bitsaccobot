@@ -183,6 +183,31 @@ pub struct BitSaccoChama {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct BitSaccoChamaShare {
+    pub id: String,
+    pub chama_id: String,
+    pub user_id: String,
+    pub shares_count: i32,
+    pub total_contribution: f64,
+    pub currency: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct BitSaccoChamaContribution {
+    pub id: String,
+    pub chama_id: String,
+    pub user_id: String,
+    pub amount: f64,
+    pub currency: String,
+    pub shares_purchased: i32,
+    pub status: String, // "pending", "completed", "failed"
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BitSaccoBtcBalance {
     pub user_id: String,
     pub balance: f64,
@@ -239,6 +264,18 @@ pub enum BotCommand {
         amount: f64,
         currency: String,
         recipient: String,
+    },
+    CreateChama {
+        name: String,
+        description: Option<String>,
+    },
+    ContributeChama {
+        chama_id: String,
+        amount: f64,
+        currency: String,
+    },
+    SharesBalance {
+        chama_id: Option<String>,
     },
     VoiceCommand {
         transcript: String,
@@ -297,6 +334,39 @@ impl BotCommand {
                 }
             }
             BotCommand::Unknown(message)
+        } else if message.starts_with("create chama ") {
+            // Parse create chama command: "create chama My Chama Group"
+            let chama_name = message.strip_prefix("create chama ").unwrap_or("");
+            if !chama_name.is_empty() {
+                return BotCommand::CreateChama {
+                    name: chama_name.to_string(),
+                    description: None,
+                };
+            }
+            BotCommand::Unknown(message)
+        } else if message.starts_with("contribute chama ") {
+            // Parse contribute chama command: "contribute chama <chama_id> 100 USD"
+            let parts: Vec<&str> = message.split_whitespace().collect();
+            if parts.len() >= 5 {
+                if let Ok(amount) = parts[3].parse::<f64>() {
+                    return BotCommand::ContributeChama {
+                        chama_id: parts[2].to_string(),
+                        amount,
+                        currency: parts[4].to_uppercase(),
+                    };
+                }
+            }
+            BotCommand::Unknown(message)
+        } else if message.starts_with("shares balance") {
+            // Parse shares balance command: "shares balance" or "shares balance <chama_id>"
+            let parts: Vec<&str> = message.split_whitespace().collect();
+            if parts.len() >= 3 {
+                BotCommand::SharesBalance {
+                    chama_id: Some(parts[2].to_string()),
+                }
+            } else {
+                BotCommand::SharesBalance { chama_id: None }
+            }
         } else {
             BotCommand::Unknown(message)
         }

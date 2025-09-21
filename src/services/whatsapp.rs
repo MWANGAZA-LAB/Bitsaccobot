@@ -145,17 +145,27 @@ impl WhatsAppService {
 • `withdraw <amount> <currency>` - Make a withdrawal
 • `transfer <amount> <currency> <phone>` - Transfer to another user
 
+*Chama Management:*
+• `create chama <name>` - Create a new chama group
+• `contribute chama <chama_id> <amount> <currency>` - Contribute to chama shares
+• `shares balance` - View your chama shares balance
+• `shares balance <chama_id>` - View shares for specific chama
+
 *Voice Commands:*
 🎤 You can also send voice messages with commands like:
 • "Help" - Get help
 • "Balance" - Check balance
 • "Bitcoin price" - Get BTC price
 • "Deposit 100 dollars" - Make a deposit
+• "Create chama My Group" - Create a chama
 
 *Examples:*
 • `deposit 100 USD`
 • `withdraw 50 KES`
 • `transfer 25 USD +254712345678`
+• `create chama Investment Group`
+• `contribute chama CH123 50 USD`
+• `shares balance`
 
 *Security Note:*
 All transactions are secure and encrypted. Your data is protected by BitSacco's enterprise-grade security.

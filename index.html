@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitSacco WhatsApp Bot - Financial Services Made Simple</title>
+    <meta name="description" content="A secure, high-performance WhatsApp bot that enables BitSacco users to access savings, Bitcoin services, and chama management directly through WhatsApp messaging.">
+    <meta name="keywords" content="BitSacco, WhatsApp Bot, Financial Services, Bitcoin, Savings, Chama, Rust, Fintech">
+    <meta name="author" content="BitSacco Team">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="BitSacco WhatsApp Bot - Financial Services Made Simple">
+    <meta property="og:description" content="Access your savings, Bitcoin portfolio, and chama management through WhatsApp. Built with the latest technologies for maximum security and performance.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mwanga-lab.github.io/Bitsaccobot/">
+    <meta property="og:image" content="https://mwanga-lab.github.io/Bitsaccobot/assets/og-image.png">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="BitSacco WhatsApp Bot">
+    <meta name="twitter:description" content="Financial services made simple through WhatsApp">
+    <meta name="twitter:image" content="https://mwanga-lab.github.io/Bitsaccobot/assets/og-image.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-robot"></i>
+                <span>BitSacco Bot</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#commands" class="nav-link">Commands</a>
+                <a href="#api" class="nav-link">API</a>
+                <a href="#deployment" class="nav-link">Deploy</a>
+                <a href="https://github.com/MWANGAZA-LAB/Bitsaccobot" class="nav-link github-link" target="_blank">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">BitSacco WhatsApp Bot</span>
+                    <br>Financial Services Made Simple
+                </h1>
+                <p class="hero-description">
+                    Access your savings, Bitcoin portfolio, and comprehensive chama management directly through WhatsApp. 
+                    Create chama groups, contribute to shares, track investments, and manage your financial future with ease.
+                    Built with the latest technologies for maximum security, performance, and reliability.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#deployment" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i> Get Started
+                    </a>
+                    <a href="https://github.com/MWANGAZA-LAB/Bitsaccobot" class="btn btn-secondary" target="_blank">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">⚡</div>
+                        <div class="stat-label">High Performance</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">🔒</div>
+                        <div class="stat-label">Maximum Security</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">🌍</div>
+                        <div class="stat-label">Global Ready</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="chat-messages">
+                            <div class="message user-message">
+                                <div class="message-content">Check my balance</div>
+                            </div>
+                            <div class="message bot-message">
+                                <div class="message-content">
+                                    💰 Your Balance:<br>
+                                    Savings: $1,250.00<br>
+                                    Bitcoin: 0.05 BTC ($2,100.00)<br>
+                                    Total: $3,350.00
+                                </div>
+                            </div>
+                            <div class="message user-message">
+                                <div class="message-content">What's the Bitcoin price?</div>
+                            </div>
+                            <div class="message bot-message">
+                                <div class="message-content">
+                                    ₿ Bitcoin Price: $42,000.00<br>
+                                    📈 24h Change: +2.5%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Powerful Features</h2>
+                <p class="section-description">
+                    Everything you need for modern financial services through WhatsApp
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3 class="feature-title">Savings Management</h3>
+                    <p class="feature-description">
+                        Check balances, make deposits, withdrawals, and transfers directly through WhatsApp messages.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fab fa-bitcoin"></i>
+                    </div>
+                    <h3 class="feature-title">Bitcoin Integration</h3>
+                    <p class="feature-description">
+                        Real-time Bitcoin prices, portfolio tracking, and cryptocurrency management.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="feature-title">Advanced Chama Management</h3>
+                    <p class="feature-description">
+                        Create chama groups, contribute to shares, track member contributions, and view detailed shares balance across all your chama investments.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Bank-Grade Security</h3>
+                    <p class="feature-description">
+                        End-to-end encryption, rate limiting, and comprehensive security audits.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <h3 class="feature-title">Voice Messages</h3>
+                    <p class="feature-description">
+                        Send voice commands and receive audio responses for hands-free operation.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="feature-title">High Performance</h3>
+                    <p class="feature-description">
+                        Built with Rust for maximum speed, reliability, and memory efficiency.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Commands Section -->
+    <section id="commands" class="commands">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Bot Commands</h2>
+                <p class="section-description">
+                    Simple, natural language commands that work seamlessly
+                </p>
+            </div>
+            <div class="commands-grid">
+                <div class="command-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-info-circle"></i>
+                        General Commands
+                    </h3>
+                    <div class="command-list">
+                        <div class="command-item">
+                            <code class="command">help</code>
+                            <span class="command-desc">Show available commands</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">balance</code>
+                            <span class="command-desc">Check savings and BTC balance</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="command-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-wallet"></i>
+                        Financial Operations
+                    </h3>
+                    <div class="command-list">
+                        <div class="command-item">
+                            <code class="command">deposit 100 USD</code>
+                            <span class="command-desc">Make a deposit</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">withdraw 50 KES</code>
+                            <span class="command-desc">Make a withdrawal</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">transfer 25 USD +254712345678</code>
+                            <span class="command-desc">Transfer to another user</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="command-category">
+                    <h3 class="category-title">
+                        <i class="fab fa-bitcoin"></i>
+                        Bitcoin Services
+                    </h3>
+                    <div class="command-list">
+                        <div class="command-item">
+                            <code class="command">btc</code>
+                            <span class="command-desc">Get current Bitcoin price</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">bitcoin price</code>
+                            <span class="command-desc">Alternative BTC price command</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="command-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-users"></i>
+                        Chama Management
+                    </h3>
+                    <div class="command-list">
+                        <div class="command-item">
+                            <code class="command">chama</code>
+                            <span class="command-desc">View your chama groups and members</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">create chama My Group</code>
+                            <span class="command-desc">Create a new chama group</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">contribute chama CH123 50 USD</code>
+                            <span class="command-desc">Contribute to chama shares</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">shares balance</code>
+                            <span class="command-desc">View your chama shares balance</span>
+                        </div>
+                        <div class="command-item">
+                            <code class="command">shares balance CH123</code>
+                            <span class="command-desc">View shares for specific chama</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="command-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-wallet"></i>
+                        Personal Savings
+                    </h3>
+                    <div class="command-list">
+                        <div class="command-item">
+                            <code class="command">savings</code>
+                            <span class="command-desc">View detailed savings information</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Section -->
+    <section id="api" class="api">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">API Integration</h2>
+                <p class="section-description">
+                    RESTful API for programmatic access and integrations
+                </p>
+            </div>
+            <div class="api-content">
+                <div class="api-endpoints">
+                    <h3 class="api-subtitle">Available Endpoints</h3>
+                    <div class="endpoint-list">
+                        <div class="endpoint-item">
+                            <div class="endpoint-method post">POST</div>
+                            <div class="endpoint-path">/webhook</div>
+                            <div class="endpoint-desc">Receives WhatsApp messages</div>
+                        </div>
+                        <div class="endpoint-item">
+                            <div class="endpoint-method get">GET</div>
+                            <div class="endpoint-path">/webhook</div>
+                            <div class="endpoint-desc">Webhook verification</div>
+                        </div>
+                        <div class="endpoint-item">
+                            <div class="endpoint-method post">POST</div>
+                            <div class="endpoint-path">/send</div>
+                            <div class="endpoint-desc">Send WhatsApp messages</div>
+                        </div>
+                        <div class="endpoint-item">
+                            <div class="endpoint-method get">GET</div>
+                            <div class="endpoint-path">/health</div>
+                            <div class="endpoint-desc">System health check</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="api-example">
+                    <h3 class="api-subtitle">Example Usage</h3>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-title">Send Message</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <pre><code class="language-bash">curl -X POST http://localhost:8080/send \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "+254712345678",
+    "message": "Hello from BitSacco Bot!"
+  }'</code></pre>
+                    </div>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-title">Health Check</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <pre><code class="language-bash">curl http://localhost:8080/health</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deployment Section -->
+    <section id="deployment" class="deployment">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Quick Deployment</h2>
+                <p class="section-description">
+                    Get up and running in minutes with our deployment options
+                </p>
+            </div>
+            <div class="deployment-options">
+                <div class="deployment-card">
+                    <div class="deployment-icon">
+                        <i class="fab fa-docker"></i>
+                    </div>
+                    <h3 class="deployment-title">Docker</h3>
+                    <p class="deployment-description">Containerized deployment with Docker</p>
+                    <div class="deployment-code">
+                        <pre><code>docker run -d \
+  --name bitsacco-bot \
+  -p 8080:8080 \
+  --env-file .env \
+  bitsacco-whatsapp-bot:latest</code></pre>
+                    </div>
+                </div>
+                <div class="deployment-card">
+                    <div class="deployment-icon">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <h3 class="deployment-title">Railway</h3>
+                    <p class="deployment-description">One-click deployment to Railway</p>
+                    <div class="deployment-code">
+                        <pre><code>npm install -g @railway/cli
+railway login
+railway deploy</code></pre>
+                    </div>
+                </div>
+                <div class="deployment-card">
+                    <div class="deployment-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h3 class="deployment-title">Manual</h3>
+                    <p class="deployment-description">Build and run from source</p>
+                    <div class="deployment-code">
+                        <pre><code>cargo build --release
+./target/release/bitsacco-whatsapp-bot</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-robot"></i>
+                        <span>BitSacco Bot</span>
+                    </div>
+                    <p class="footer-description">
+                        Empowering financial inclusion through accessible technology.
+                    </p>
+                    <div class="social-links">
+                        <a href="https://github.com/MWANGAZA-LAB/Bitsaccobot" target="_blank" class="social-link">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/MWANGAZA-LAB/Bitsaccobot/blob/main/README.md">Documentation</a></li>
+                        <li><a href="https://github.com/MWANGAZA-LAB/Bitsaccobot/issues">Issues</a></li>
+                        <li><a href="https://github.com/MWANGAZA-LAB/Bitsaccobot/discussions">Discussions</a></li>
+                        <li><a href="https://github.com/MWANGAZA-LAB/Bitsaccobot/blob/main/docs/DEPLOYMENT.md">Deployment Guide</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Features</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Savings Management</a></li>
+                        <li><a href="#features">Bitcoin Integration</a></li>
+                        <li><a href="#features">Voice Messages</a></li>
+                        <li><a href="#features">Security</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/MWANGAZA-LAB/Bitsaccobot/blob/main/LICENSE">License</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 BitSacco Team. Built with ❤️ using Rust.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>

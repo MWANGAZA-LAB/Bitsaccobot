@@ -313,6 +313,90 @@ async fn process_text_message(state: AppState, phone_number: String, message: St
                 }
             }
         },
+        BotCommand::CreateChama { name, description } => {
+            match create_chama(&state, &phone_number, &name, description.as_deref()).await {
+                Ok(chama) => {
+                    let message = format!(
+                        "🎉 *Chama Created Successfully!*\n\nName: {}\nID: {}\nDescription: {}\n\nShare this ID with members: `{}`",
+                        chama.name,
+                        chama.id,
+                        description.as_deref().unwrap_or("No description"),
+                        chama.id
+                    );
+                    state
+                        .whatsapp_service
+                        .send_success_message(&phone_number, &message)
+                        .await?;
+                }
+                Err(e) => {
+                    state
+                        .whatsapp_service
+                        .send_error_message(&phone_number, &e.to_string())
+                        .await?;
+                }
+            }
+        },
+        BotCommand::ContributeChama { chama_id, amount, currency } => {
+            validate_amount(amount)?;
+            validate_currency(&currency)?;
+            match contribute_to_chama(&state, &phone_number, &chama_id, amount, &currency).await {
+                Ok(contribution) => {
+                    let message = format!(
+                        "💰 *Chama Contribution Successful!*\n\nAmount: {:.2} {}\nShares Purchased: {}\nChama ID: {}\nTransaction ID: {}",
+                        amount, currency, contribution.shares_purchased, chama_id, contribution.id
+                    );
+                    state
+                        .whatsapp_service
+                        .send_success_message(&phone_number, &message)
+                        .await?;
+                }
+                Err(e) => {
+                    state
+                        .whatsapp_service
+                        .send_error_message(&phone_number, &e.to_string())
+                        .await?;
+                }
+            }
+        },
+        BotCommand::SharesBalance { chama_id } => {
+            match get_user_chama_shares(&state, &phone_number, chama_id.as_deref()).await {
+                Ok(shares) => {
+                    if shares.is_empty() {
+                        let message = if let Some(chama_id) = chama_id {
+                            format!("You don't have any shares in chama {}.", chama_id)
+                        } else {
+                            "You don't have any chama shares yet.".to_string()
+                        };
+                        state
+                            .whatsapp_service
+                            .send_message(&phone_number, &message)
+                            .await?;
+                    } else {
+                        let message = format!(
+                            "📊 *Your Chama Shares*\n\n{}",
+                            shares
+                                .iter()
+                                .map(|s| format!(
+                                    "• Chama: {}\n  Shares: {}\n  Total Contribution: {:.2} {}\n  Last Updated: {}",
+                                    s.chama_id, s.shares_count, s.total_contribution, s.currency, s.updated_at
+                                ))
+                                .collect::<Vec<_>>()
+                                .join("\n\n")
+                        );
+                        state
+                            .whatsapp_service
+                            .send_message(&phone_number, &message)
+                            .await?;
+                    }
+                }
+                Err(e) => {
+                    state
+                        .whatsapp_service
+                        .send_error_message(&phone_number, &e.to_string())
+                        .await?;
+                }
+            }
+        },
         BotCommand::VoiceCommand { transcript } => {
             // This should not happen in text processing, but handle it gracefully
             let response = format!(
@@ -537,6 +621,57 @@ pub async fn send_message(
         .await?;
 
     Ok(Json(response))
+}
+
+async fn create_chama(
+    state: &AppState,
+    phone_number: &str,
+    name: &str,
+    description: Option<&str>,
+) -> Result<crate::types::BitSaccoChama> {
+    let user = state
+        .bitsacco_service
+        .get_user_by_phone(phone_number, &state.cache)
+        .await?;
+
+    state
+        .bitsacco_service
+        .create_chama(&user.id, name, description)
+        .await
+}
+
+async fn contribute_to_chama(
+    state: &AppState,
+    phone_number: &str,
+    chama_id: &str,
+    amount: f64,
+    currency: &str,
+) -> Result<crate::types::BitSaccoChamaContribution> {
+    let user = state
+        .bitsacco_service
+        .get_user_by_phone(phone_number, &state.cache)
+        .await?;
+
+    state
+        .bitsacco_service
+        .contribute_to_chama(&user.id, chama_id, amount, currency)
+        .await
+}
+
+async fn get_user_chama_shares(
+    state: &AppState,
+    phone_number: &str,
+    chama_id: Option<&str>,
+) -> Result<Vec<crate::types::BitSaccoChamaShare>> {
+    let user = state
+        .bitsacco_service
+        .get_user_by_phone(phone_number, &state.cache)
+        .await?;
+
+    state
+        .bitsacco_service
+        .get_user_chama_shares(&user.id, chama_id)
+        .await
 }
 
 pub async fn health_check(State(state): State<AppState>) -> Result<Json<HealthResponse>> {
