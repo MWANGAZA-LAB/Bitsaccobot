@@ -22,7 +22,7 @@ mod webhook;
 use cache::AppCache;
 use circuit_breaker::ApiCircuitBreaker;
 use config::AppConfig;
-use services::{bitsacco::BitSaccoService, btc::BtcService, whatsapp::WhatsAppService};
+use services::{bitsacco::BitSaccoService, btc::BtcService, voice::VoiceService, whatsapp::WhatsAppService};
 use types::AppState;
 use webhook::{handle_webhook, health_check, send_message};
 
@@ -51,12 +51,14 @@ async fn main() -> Result<()> {
     let whatsapp_service = WhatsAppService::new(&config)?;
     let bitsacco_service = BitSaccoService::new(&config)?;
     let btc_service = BtcService::new(&config)?;
+    let voice_service = VoiceService::new(&config)?;
 
     let app_state = AppState {
         config,
         whatsapp_service,
         bitsacco_service,
         btc_service,
+        voice_service,
         cache,
         circuit_breaker,
     };

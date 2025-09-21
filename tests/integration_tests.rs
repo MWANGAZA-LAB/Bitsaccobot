@@ -1,6 +1,6 @@
 use bitsacco_whatsapp_bot::{
     config::AppConfig,
-    services::{bitsacco::BitSaccoService, btc::BtcService, whatsapp::WhatsAppService},
+    services::{bitsacco::BitSaccoService, btc::BtcService, voice::VoiceService, whatsapp::WhatsAppService},
     types::BotCommand,
 };
 use mockito::{Server, ServerGuard};
@@ -16,6 +16,7 @@ async fn create_test_config() -> (AppConfig, ServerGuard) {
         whatsapp_phone_number_id: "test_phone_id".to_string(),
         whatsapp_webhook_verify_token: "test_verify_token".to_string(),
         whatsapp_api_base_url: url.clone(),
+        whatsapp_media_base_url: url.clone(),
         bitsacco_api_base_url: url.clone(),
         bitsacco_api_token: "test_bitsacco_token".to_string(),
         server_host: "127.0.0.1".to_string(),
@@ -287,4 +288,33 @@ async fn test_message_validation() {
         .await;
     // We expect this to fail due to no mock, but not due to validation
     assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn test_voice_service_creation() {
+    let (config, _server) = create_test_config().await;
+    let voice_service = VoiceService::new(&config);
+    assert!(voice_service.is_ok());
+}
+
+#[tokio::test]
+async fn test_voice_service_health_check() {
+    let (config, _server) = create_test_config().await;
+    let voice_service = VoiceService::new(&config).unwrap();
+    
+    let result = voice_service.health_check().await;
+    assert!(result.is_ok());
+}
+
+#[tokio::test]
+async fn test_voice_command_parsing() {
+    // Test that voice commands are parsed correctly
+    let command = BotCommand::parse("help");
+    assert!(matches!(command, BotCommand::Help));
+    
+    let command = BotCommand::parse("balance");
+    assert!(matches!(command, BotCommand::Balance));
+    
+    let command = BotCommand::parse("bitcoin");
+    assert!(matches!(command, BotCommand::BtcPrice));
 }

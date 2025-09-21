@@ -14,7 +14,7 @@ tower = "0.5"
 tower-http = { version = "0.6", features = ["cors", "trace"] }
 
 # HTTP client
-reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "multipart"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -53,6 +53,16 @@ dashmap = "6.0"
 moka = { version = "0.12", features = ["future"] }
 
 # Circuit breaker - simplified implementation
+
+# Audio processing
+hound = "3.5"
+# Speech-to-text and text-to-speech
+# Note: For production, consider using cloud services like Azure Speech, Google Cloud Speech, or AWS Polly
+# For now, we'll implement basic audio file handling and prepare for integration
+
+# File handling
+tempfile = "3.8"
+tokio-util = { version = "0.7", features = ["codec"] }
 
 # Configuration
 config = "0.15"

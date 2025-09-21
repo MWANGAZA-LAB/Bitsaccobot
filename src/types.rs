@@ -5,7 +5,7 @@ use crate::{
     cache::AppCache,
     circuit_breaker::ApiCircuitBreaker,
     config::AppConfig,
-    services::{bitsacco::BitSaccoService, btc::BtcService, whatsapp::WhatsAppService},
+    services::{bitsacco::BitSaccoService, btc::BtcService, voice::VoiceService, whatsapp::WhatsAppService},
 };
 
 #[derive(Debug, Clone)]
@@ -15,6 +15,7 @@ pub struct AppState {
     pub whatsapp_service: WhatsAppService,
     pub bitsacco_service: BitSaccoService,
     pub btc_service: BtcService,
+    pub voice_service: VoiceService,
     pub cache: AppCache,
     pub circuit_breaker: ApiCircuitBreaker,
 }
@@ -70,6 +71,8 @@ pub struct WhatsAppMessage {
     pub id: String,
     pub timestamp: String,
     pub text: Option<WhatsAppText>,
+    pub voice: Option<WhatsAppVoice>,
+    pub audio: Option<WhatsAppAudio>,
     pub context: Option<WhatsAppContext>,
     pub r#type: String,
 }
@@ -77,6 +80,20 @@ pub struct WhatsAppMessage {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct WhatsAppText {
     pub body: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct WhatsAppVoice {
+    pub id: String,
+    pub mime_type: String,
+    pub sha256: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct WhatsAppAudio {
+    pub id: String,
+    pub mime_type: String,
+    pub sha256: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -99,12 +116,18 @@ pub struct WhatsAppSendRequest {
     pub messaging_product: String,
     pub to: String,
     pub r#type: String,
-    pub text: WhatsAppTextContent,
+    pub text: Option<WhatsAppTextContent>,
+    pub audio: Option<WhatsAppAudioContent>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct WhatsAppTextContent {
     pub body: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct WhatsAppAudioContent {
+    pub id: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -216,6 +239,9 @@ pub enum BotCommand {
         amount: f64,
         currency: String,
         recipient: String,
+    },
+    VoiceCommand {
+        transcript: String,
     },
     Unknown(String),
 }

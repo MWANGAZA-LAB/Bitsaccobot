@@ -1,7 +1,7 @@
 use crate::{
     config::AppConfig,
     error::{AppError, Result},
-    types::{WhatsAppSendRequest, WhatsAppSendResponse, WhatsAppTextContent},
+    types::{WhatsAppSendRequest, WhatsAppSendResponse, WhatsAppTextContent, WhatsAppAudioContent},
 };
 use reqwest::Client;
 use ring::hmac;
@@ -88,9 +88,10 @@ impl WhatsAppService {
             messaging_product: "whatsapp".to_string(),
             to: to.to_string(),
             r#type: "text".to_string(),
-            text: WhatsAppTextContent {
+            text: Some(WhatsAppTextContent {
                 body: message.to_string(),
-            },
+            }),
+            audio: None,
         };
 
         info!("Sending WhatsApp message to: {}", to);
@@ -143,6 +144,13 @@ impl WhatsAppService {
 • `deposit <amount> <currency>` - Make a deposit
 • `withdraw <amount> <currency>` - Make a withdrawal
 • `transfer <amount> <currency> <phone>` - Transfer to another user
+
+*Voice Commands:*
+🎤 You can also send voice messages with commands like:
+• "Help" - Get help
+• "Balance" - Check balance
+• "Bitcoin price" - Get BTC price
+• "Deposit 100 dollars" - Make a deposit
 
 *Examples:*
 • `deposit 100 USD`
@@ -245,5 +253,113 @@ Data provided by BitSacco API"#,
 
         self.send_message(to, &price_text).await?;
         Ok(())
+    }
+
+    /// Send a voice message (audio file)
+    pub async fn send_voice_message(&self, to: &str, audio_file_path: &str) -> Result<()> {
+        // First, upload the audio file to WhatsApp
+        let media_id = self.upload_media(audio_file_path).await?;
+        
+        // Then send the voice message
+        let request = WhatsAppSendRequest {
+            messaging_product: "whatsapp".to_string(),
+            to: to.to_string(),
+            r#type: "audio".to_string(),
+            text: None,
+            audio: Some(WhatsAppAudioContent {
+                id: media_id.clone(),
+            }),
+        };
+
+        let url = format!("{}/{}/messages", self.api_base_url, self.phone_number_id);
+        
+        info!("Sending voice message to {} with media ID: {}", to, media_id.clone());
+
+        let response = self
+            .client
+            .post(&url)
+            .bearer_auth(&self.access_token)
+            .json(&request)
+            .send()
+            .await
+            .map_err(|e| AppError::WhatsApp(format!("Failed to send voice message: {}", e)))?;
+
+        if response.status().is_success() {
+            let response_data: WhatsAppSendResponse = response
+                .json()
+                .await
+                .map_err(|e| AppError::WhatsApp(format!("Failed to parse response: {}", e)))?;
+            
+            info!("Voice message sent successfully: {:?}", response_data);
+            Ok(())
+        } else {
+            let status = response.status();
+            let body = response.text().await.unwrap_or_default();
+            error!("Failed to send voice message: status={}, body={}", status, body);
+            Err(AppError::WhatsApp(format!(
+                "Failed to send voice message: HTTP {} - {}",
+                status, body
+            )))
+        }
+    }
+
+    /// Upload media file to WhatsApp and return media ID
+    async fn upload_media(&self, file_path: &str) -> Result<String> {
+        use std::fs;
+        use std::path::Path;
+        
+        let path = Path::new(file_path);
+        if !path.exists() {
+            return Err(AppError::Validation(format!("File not found: {}", file_path)));
+        }
+
+        let file_data = fs::read(file_path)
+            .map_err(|e| AppError::Internal(format!("Failed to read file: {}", e)))?;
+
+        let file_name = path.file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("audio.wav");
+
+        let form = reqwest::multipart::Form::new()
+            .part("file", reqwest::multipart::Part::bytes(file_data)
+                .file_name(file_name.to_string())
+                .mime_str("audio/wav")?)
+            .part("type", reqwest::multipart::Part::text("audio/wav"))
+            .part("messaging_product", reqwest::multipart::Part::text("whatsapp"));
+
+        let url = format!("{}/{}/media", self.api_base_url, self.phone_number_id);
+        
+        info!("Uploading media file: {}", file_path);
+
+        let response = self
+            .client
+            .post(&url)
+            .bearer_auth(&self.access_token)
+            .multipart(form)
+            .send()
+            .await
+            .map_err(|e| AppError::WhatsApp(format!("Failed to upload media: {}", e)))?;
+
+        if response.status().is_success() {
+            let response_data: serde_json::Value = response
+                .json()
+                .await
+                .map_err(|e| AppError::WhatsApp(format!("Failed to parse upload response: {}", e)))?;
+            
+            let media_id = response_data["id"]
+                .as_str()
+                .ok_or_else(|| AppError::WhatsApp("Media ID not found in response".to_string()))?;
+            
+            info!("Media uploaded successfully with ID: {}", media_id);
+            Ok(media_id.to_string())
+        } else {
+            let status = response.status();
+            let body = response.text().await.unwrap_or_default();
+            error!("Failed to upload media: status={}, body={}", status, body);
+            Err(AppError::WhatsApp(format!(
+                "Failed to upload media: HTTP {} - {}",
+                status, body
+            )))
+        }
     }
 }

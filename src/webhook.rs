@@ -77,26 +77,59 @@ pub async fn handle_webhook(
         for change in entry.changes {
             if let Some(messages) = change.value.messages {
                 for message in messages {
-                    if let Some(text) = message.text {
-                        let phone_number = &message.from;
-                        let message_text = &text.body;
+                    let phone_number = &message.from;
+                    
+                    // Validate phone number
+                    validate_phone_number(phone_number)?;
 
-                        // Validate input
-                        validate_phone_number(phone_number)?;
+                    // Process text messages
+                    if let Some(text) = message.text {
+                        let message_text = &text.body;
                         validate_message(message_text)?;
 
-                        info!("Processing message from {}: {}", phone_number, message_text);
+                        info!("Processing text message from {}: {}", phone_number, message_text);
 
-                        // Process the message asynchronously
                         let state_clone = state.clone();
                         let phone_clone = phone_number.clone();
                         let message_clone = message_text.clone();
 
                         tokio::spawn(async move {
                             if let Err(e) =
-                                process_message(state_clone, phone_clone, message_clone).await
+                                process_text_message(state_clone, phone_clone, message_clone).await
                             {
-                                error!("Error processing message: {}", e);
+                                error!("Error processing text message: {}", e);
+                            }
+                        });
+                    }
+                    // Process voice messages
+                    else if let Some(voice) = message.voice {
+                        info!("Processing voice message from {}: {}", phone_number, voice.id);
+
+                        let state_clone = state.clone();
+                        let phone_clone = phone_number.clone();
+                        let voice_clone = voice.clone();
+
+                        tokio::spawn(async move {
+                            if let Err(e) =
+                                process_voice_message(state_clone, phone_clone, voice_clone).await
+                            {
+                                error!("Error processing voice message: {}", e);
+                            }
+                        });
+                    }
+                    // Process audio messages
+                    else if let Some(audio) = message.audio {
+                        info!("Processing audio message from {}: {}", phone_number, audio.id);
+
+                        let state_clone = state.clone();
+                        let phone_clone = phone_number.clone();
+                        let audio_clone = audio.clone();
+
+                        tokio::spawn(async move {
+                            if let Err(e) =
+                                process_audio_message(state_clone, phone_clone, audio_clone).await
+                            {
+                                error!("Error processing audio message: {}", e);
                             }
                         });
                     }
@@ -108,7 +141,7 @@ pub async fn handle_webhook(
     Ok("OK".to_string())
 }
 
-async fn process_message(state: AppState, phone_number: String, message: String) -> Result<()> {
+async fn process_text_message(state: AppState, phone_number: String, message: String) -> Result<()> {
     let command = BotCommand::parse(&message);
 
     match command {
@@ -280,6 +313,17 @@ async fn process_message(state: AppState, phone_number: String, message: String)
                 }
             }
         },
+        BotCommand::VoiceCommand { transcript } => {
+            // This should not happen in text processing, but handle it gracefully
+            let response = format!(
+                "Voice command received: \"{}\"\n\nProcessing as text command...",
+                transcript
+            );
+            state
+                .whatsapp_service
+                .send_message(&phone_number, &response)
+                .await?;
+        }
         BotCommand::Unknown(message) => {
             let response = format!(
                 "I didn't understand: \"{}\"\n\nSend `help` to see available commands.",
@@ -291,6 +335,101 @@ async fn process_message(state: AppState, phone_number: String, message: String)
                 .await?;
         }
     }
+
+    Ok(())
+}
+
+async fn process_voice_message(
+    state: AppState,
+    phone_number: String,
+    voice: crate::types::WhatsAppVoice,
+) -> Result<()> {
+    info!("Processing voice message from {}", phone_number);
+
+    // Download the voice message
+    let audio_path = state.voice_service.download_voice_message(&voice).await?;
+
+    // Convert speech to text
+    let transcript = state.voice_service.speech_to_text(&audio_path).await?;
+    
+    info!("Voice transcript: {}", transcript);
+
+    // Process the transcript as a command
+    let command = BotCommand::parse(&transcript);
+    
+    match command {
+        BotCommand::VoiceCommand { transcript } => {
+            // Process the voice command
+            process_voice_command(&state, &phone_number, &transcript).await?;
+        }
+        _ => {
+            // If it's a regular command, process it normally
+            process_text_message(state, phone_number, transcript).await?;
+        }
+    }
+
+    // Clean up the temporary file
+    let _ = std::fs::remove_file(audio_path);
+
+    Ok(())
+}
+
+async fn process_audio_message(
+    state: AppState,
+    phone_number: String,
+    audio: crate::types::WhatsAppAudio,
+) -> Result<()> {
+    info!("Processing audio message from {}", phone_number);
+
+    // Download the audio message
+    let audio_path = state.voice_service.download_audio_message(&audio).await?;
+
+    // Convert speech to text
+    let transcript = state.voice_service.speech_to_text(&audio_path).await?;
+    
+    info!("Audio transcript: {}", transcript);
+
+    // Process the transcript as a command
+    let command = BotCommand::parse(&transcript);
+    
+    match command {
+        BotCommand::VoiceCommand { transcript } => {
+            // Process the voice command
+            process_voice_command(&state, &phone_number, &transcript).await?;
+        }
+        _ => {
+            // If it's a regular command, process it normally
+            process_text_message(state, phone_number, transcript).await?;
+        }
+    }
+
+    // Clean up the temporary file
+    let _ = std::fs::remove_file(audio_path);
+
+    Ok(())
+}
+
+async fn process_voice_command(
+    state: &AppState,
+    phone_number: &str,
+    transcript: &str,
+) -> Result<()> {
+    info!("Processing voice command: {}", transcript);
+
+    // For now, we'll respond with a text message acknowledging the voice command
+    // In the future, we could respond with a voice message using text-to-speech
+    let response = format!(
+        "🎤 *Voice Command Received*\n\nI heard: \"{}\"\n\nProcessing your request...",
+        transcript
+    );
+
+    state
+        .whatsapp_service
+        .send_message(phone_number, &response)
+        .await?;
+
+    // Process the transcript as a regular command
+    process_text_message(state.clone(), phone_number.to_string(), transcript.to_string()).await?;
 
     Ok(())
 }
@@ -416,6 +555,12 @@ pub async fn health_check(State(state): State<AppState>) -> Result<Json<HealthRe
     match state.btc_service.health_check(&state.cache).await {
         Ok(_) => services.insert("btc".to_string(), "healthy".to_string()),
         Err(_) => services.insert("btc".to_string(), "unhealthy".to_string()),
+    };
+
+    // Check Voice service
+    match state.voice_service.health_check().await {
+        Ok(_) => services.insert("voice".to_string(), "healthy".to_string()),
+        Err(_) => services.insert("voice".to_string(), "unhealthy".to_string()),
     };
 
     let response = HealthResponse {

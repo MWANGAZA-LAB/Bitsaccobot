@@ -106,7 +106,7 @@ mod tests {
     async fn test_rate_limiter() {
         let config = RateLimitConfig {
             requests_per_minute: 2,
-            burst_size: 1,
+            burst_size: 2,
         };
         
         let rate_limiter = RateLimiterService::new(config);

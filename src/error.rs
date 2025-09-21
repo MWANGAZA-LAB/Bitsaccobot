@@ -17,6 +17,9 @@ pub enum AppError {
     #[error("JSON serialization error: {0}")]
     Json(#[from] serde_json::Error),
 
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+
     #[error("Validation error: {0}")]
     Validation(String),
 
@@ -46,6 +49,7 @@ impl IntoResponse for AppError {
             AppError::Config(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg.to_string()),
             AppError::Http(msg) => (StatusCode::BAD_GATEWAY, msg.to_string()),
             AppError::Json(msg) => (StatusCode::BAD_REQUEST, msg.to_string()),
+            AppError::Io(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg.to_string()),
             AppError::Validation(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::WhatsApp(msg) => (StatusCode::BAD_GATEWAY, msg),
             AppError::BitSacco(msg) => (StatusCode::BAD_GATEWAY, msg),

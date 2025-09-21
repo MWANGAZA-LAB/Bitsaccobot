@@ -9,6 +9,7 @@ pub struct AppConfig {
     pub whatsapp_phone_number_id: String,
     pub whatsapp_webhook_verify_token: String,
     pub whatsapp_api_base_url: String,
+    pub whatsapp_media_base_url: String,
 
     // BitSacco API Configuration
     pub bitsacco_api_base_url: String,
@@ -41,6 +42,8 @@ impl AppConfig {
             whatsapp_webhook_verify_token: env::var("WHATSAPP_WEBHOOK_VERIFY_TOKEN")
                 .context("WHATSAPP_WEBHOOK_VERIFY_TOKEN must be set")?,
             whatsapp_api_base_url: env::var("WHATSAPP_API_BASE_URL")
+                .unwrap_or_else(|_| "https://graph.facebook.com/v18.0".to_string()),
+            whatsapp_media_base_url: env::var("WHATSAPP_MEDIA_BASE_URL")
                 .unwrap_or_else(|_| "https://graph.facebook.com/v18.0".to_string()),
 
             bitsacco_api_base_url: env::var("BITSACCO_API_BASE_URL")
