@@ -8,4 +8,4 @@ pub use config::AppConfig;
 pub use error::{AppError, Result};
 pub use services::{bitsacco::BitSaccoService, btc::BtcService, whatsapp::WhatsAppService};
 pub use types::{AppState, BotCommand};
-pub use webhook::{handle_webhook, send_message, health_check};
+pub use webhook::{handle_webhook, health_check, send_message};

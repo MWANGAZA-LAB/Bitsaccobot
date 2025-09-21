@@ -1,0 +1,22 @@
+[licenses]
+# Allow common open source licenses
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",  # Unicode License v3 (OSI approved)
+    "Unicode-DFS-2016",  # Unicode License Agreement - Data Files and Software
+    "CC0-1.0",  # Creative Commons Zero v1.0 Universal
+    "MPL-2.0",  # Mozilla Public License 2.0
+    "Zlib",  # zlib License
+    "OpenSSL",  # OpenSSL License
+    "NCSA",  # University of Illinois/NCSA Open Source License
+    "CDLA-Permissive-2.0",  # Community Data License Agreement Permissive 2.0
+]
+
+# Allow licenses for specific crates if needed
+exceptions = [
+    # Add specific crate exceptions here if needed
+]

@@ -1,7 +1,5 @@
 use bitsacco_whatsapp_bot::{
-    config::AppConfig,
-    services::whatsapp::WhatsAppService,
-    types::BotCommand,
+    config::AppConfig, services::whatsapp::WhatsAppService, types::BotCommand,
 };
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::hint::black_box;
@@ -69,7 +67,6 @@ fn benchmark_whatsapp_verification(c: &mut Criterion) {
 }
 
 fn benchmark_concurrent_requests(c: &mut Criterion) {
-
     c.bench_function("concurrent_command_parsing", |b| {
         b.iter(|| {
             let commands = vec![
@@ -83,13 +80,15 @@ fn benchmark_concurrent_requests(c: &mut Criterion) {
                 "transfer 25 USD +254712345678",
             ];
 
-            commands.into_iter().map(BotCommand::parse).collect::<Vec<_>>()
+            commands
+                .into_iter()
+                .map(BotCommand::parse)
+                .collect::<Vec<_>>()
         })
     });
 }
 
 fn benchmark_message_processing(c: &mut Criterion) {
-
     c.bench_function("message_processing_simulation", |b| {
         b.iter(|| {
             let messages = vec![

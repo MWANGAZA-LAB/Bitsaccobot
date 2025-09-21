@@ -105,7 +105,8 @@ async fn test_bitsacco_service_user_lookup() {
     let bitsacco_service = BitSaccoService::new(&config).unwrap();
 
     // Mock the API response
-    let _m = server.mock("GET", "/users/phone/+254712345678")
+    let _m = server
+        .mock("GET", "/users/phone/+254712345678")
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(
@@ -137,7 +138,8 @@ async fn test_bitsacco_service_savings() {
     let bitsacco_service = BitSaccoService::new(&config).unwrap();
 
     // Mock the API response
-    let _m = server.mock("GET", "/users/user123/savings")
+    let _m = server
+        .mock("GET", "/users/user123/savings")
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(
@@ -178,22 +180,23 @@ async fn test_btc_service_price() {
     let btc_service = BtcService::new(&config).unwrap();
 
     // Mock the API response
-    let _m = server.mock(
-        "GET",
-        "/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
-    )
-    .with_status(200)
-    .with_header("content-type", "application/json")
-    .with_body(
-        json!({
-            "bitcoin": {
-                "usd": 50000.0,
-                "usd_24h_change": 2.5
-            }
-        })
-        .to_string(),
-    )
-    .create();
+    let _m = server
+        .mock(
+            "GET",
+            "/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
+        )
+        .with_status(200)
+        .with_header("content-type", "application/json")
+        .with_body(
+            json!({
+                "bitcoin": {
+                    "usd": 50000.0,
+                    "usd_24h_change": 2.5
+                }
+            })
+            .to_string(),
+        )
+        .create();
 
     let price = btc_service.get_btc_price_usd().await.unwrap();
 
@@ -208,7 +211,8 @@ async fn test_whatsapp_send_message() {
     let whatsapp_service = WhatsAppService::new(&config).unwrap();
 
     // Mock the WhatsApp API response
-    let _m = server.mock("POST", "/test_phone_id/messages")
+    let _m = server
+        .mock("POST", "/test_phone_id/messages")
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(
@@ -242,7 +246,8 @@ async fn test_error_handling() {
     let bitsacco_service = BitSaccoService::new(&config).unwrap();
 
     // Mock API error response
-    let _m = server.mock("GET", "/users/phone/invalid")
+    let _m = server
+        .mock("GET", "/users/phone/invalid")
         .with_status(404)
         .with_header("content-type", "application/json")
         .with_body(
