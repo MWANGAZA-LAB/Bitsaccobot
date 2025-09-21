@@ -29,9 +29,10 @@ RUN cargo build --release
 # Runtime stage
 FROM debian:bookworm-slim
 
-# Install runtime dependencies
+# Install runtime dependencies including wget for health checks
 RUN apt-get update && apt-get install -y \
     ca-certificates \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
@@ -52,9 +53,9 @@ USER bitsacco
 # Expose port
 EXPOSE 8080
 
-# Health check
+# Enhanced health check with wget
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 # Run the application
 CMD ["./bitsacco-whatsapp-bot"]
