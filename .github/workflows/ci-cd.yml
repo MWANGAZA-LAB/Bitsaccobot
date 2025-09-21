@@ -103,9 +103,7 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: [test, security]
-    env:
-      HAS_DOCKER_CREDS: ${{ secrets.DOCKER_USERNAME && secrets.DOCKER_PASSWORD }}
-    if: ${{ env.HAS_DOCKER_CREDS }}
+    if: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
     
     steps:
     - name: Checkout code
