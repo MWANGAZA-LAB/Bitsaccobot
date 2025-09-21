@@ -122,8 +122,9 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     background: white;
-    padding: 10px;
-    object-fit: contain;
+    padding: 0;
+    object-fit: cover;
+    object-position: center;
 }
 
 .hero-logo:hover {
@@ -761,6 +762,11 @@ section {
     .hero-buttons {
         justify-content: center;
         flex-wrap: wrap;
+    }
+    
+    .hero-logo {
+        width: 100px;
+        height: 100px;
     }
     
     .hero-stats {
