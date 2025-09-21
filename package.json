@@ -1,0 +1,30 @@
+{
+  "name": "bitsacco-whatsapp-bot-website",
+  "version": "1.0.0",
+  "description": "BitSacco WhatsApp Bot static website with TypeScript",
+  "main": "dist/script.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "bitsacco",
+    "whatsapp",
+    "bot",
+    "typescript",
+    "website",
+    "fintech"
+  ],
+  "author": "BitSacco Team",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.10.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

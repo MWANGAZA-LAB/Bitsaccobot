@@ -36,7 +36,7 @@ RATE_LIMIT_REQUESTS_PER_MINUTE=60
 MAX_MESSAGE_LENGTH=4096
 
 # BTC Service Configuration
-BTC_API_BASE_URL=https://api.coingecko.com/api/v3
+BTC_API_BASE_URL=https://api.coinbase.com/v2/prices/BTC-USD/spot
 BTC_API_KEY=your_btc_api_key_here
 ```
 
