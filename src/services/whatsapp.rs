@@ -12,6 +12,7 @@ pub struct WhatsAppService {
     access_token: String,
     phone_number_id: String,
     webhook_verify_token: String,
+    api_base_url: String,
 }
 
 impl WhatsAppService {
@@ -26,6 +27,7 @@ impl WhatsAppService {
             access_token: config.whatsapp_access_token.clone(),
             phone_number_id: config.whatsapp_phone_number_id.clone(),
             webhook_verify_token: config.whatsapp_webhook_verify_token.clone(),
+            api_base_url: config.whatsapp_api_base_url.clone(),
         })
     }
 
@@ -48,8 +50,8 @@ impl WhatsAppService {
         }
 
         let url = format!(
-            "https://graph.facebook.com/v18.0/{}/messages",
-            self.phone_number_id
+            "{}/{}/messages",
+            self.api_base_url, self.phone_number_id
         );
 
         let request = WhatsAppSendRequest {

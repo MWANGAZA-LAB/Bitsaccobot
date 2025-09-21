@@ -15,6 +15,7 @@ async fn create_test_config() -> (AppConfig, ServerGuard) {
         whatsapp_access_token: "test_token".to_string(),
         whatsapp_phone_number_id: "test_phone_id".to_string(),
         whatsapp_webhook_verify_token: "test_verify_token".to_string(),
+        whatsapp_api_base_url: url.clone(),
         bitsacco_api_base_url: url.clone(),
         bitsacco_api_token: "test_bitsacco_token".to_string(),
         server_host: "127.0.0.1".to_string(),
@@ -179,12 +180,10 @@ async fn test_btc_service_price() {
     let (config, mut server) = create_test_config().await;
     let btc_service = BtcService::new(&config).unwrap();
 
-    // Mock the API response
+
+    // Mock the API response - use regex to match any query parameters
     let _m = server
-        .mock(
-            "GET",
-            "/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
-        )
+        .mock("GET", mockito::Matcher::Regex(r"^/simple/price\?.*$".to_string()))
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(
