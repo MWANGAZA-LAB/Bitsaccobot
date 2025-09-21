@@ -150,7 +150,7 @@ body {
     align-items: center;
     gap: 10px;
     margin-bottom: 15px;
-    color: #f7931a;
+    color: #20b2aa;
     font-weight: 600;
     font-size: 1.1rem;
 }
@@ -183,7 +183,7 @@ body {
 }
 
 .price-value {
-    color: #10b981;
+    color: #40e0d0;
     font-weight: 700;
     font-size: 1.1rem;
 }
@@ -228,8 +228,18 @@ body {
     margin-bottom: 20px;
 }
 
+.bitsacco-catchphrase {
+    color: #20b2aa;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 10px;
+}
+
 .gradient-text {
-    background: linear-gradient(45deg, #fbbf24, #f59e0b);
+    background: linear-gradient(45deg, #20b2aa, #40e0d0);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -263,25 +273,27 @@ body {
 }
 
 .btn-primary {
-    background: #fbbf24;
-    color: #1f2937;
+    background: #20b2aa;
+    color: white;
 }
 
 .btn-primary:hover {
-    background: #f59e0b;
+    background: #008b8b;
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(251, 191, 36, 0.3);
+    box-shadow: 0 10px 25px rgba(32, 178, 170, 0.3);
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid #20b2aa;
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(32, 178, 170, 0.2);
+    border-color: #40e0d0;
     transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(32, 178, 170, 0.2);
 }
 
 .hero-stats {
@@ -825,6 +837,11 @@ section {
         font-size: 2.5rem;
     }
     
+    .bitsacco-catchphrase {
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+    }
+    
     .hero-buttons {
         justify-content: center;
         flex-wrap: wrap;
@@ -919,6 +936,11 @@ section {
     
     .hero-title {
         font-size: 2rem;
+    }
+    
+    .bitsacco-catchphrase {
+        font-size: 1.5rem;
+        letter-spacing: 0.5px;
     }
     
     .hero-description {
