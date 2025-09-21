@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = [
         {
             user: "balance",
-            bot: "💰 Your BitSacco Balance<br><br>Savings Balance: 125,050,000 sats<br>Bitcoin Balance: 2,500,000 sats<br><br>Total Balance: 127,550,000 sats<br><br>Last updated: 2024-01-15 14:30:25 UTC"
+            bot: "💰 Your BitSacco Balance<br><br>Total Balance: 127,550,000 sats (1,275.50 KES)<br><br>Last updated: 2024-01-15 14:30:25 UTC"
         },
         {
             user: "bitcoin price",

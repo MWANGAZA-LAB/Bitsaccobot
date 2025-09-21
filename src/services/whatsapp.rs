@@ -202,23 +202,20 @@ Need more help? Visit https://bitsacco.com or contact support."#;
         btc_balance: f64,
         currency: &str,
     ) -> Result<()> {
-        // Convert savings balance to sats (assuming 1 KES = 1 sat for simplicity)
+        // Convert total balance to sats (assuming 1 KES = 1 sat for simplicity)
         // In real implementation, this would use current BTC price to convert KES to sats
-        let savings_sats = (savings_balance * 100_000_000.0) as u64; // Convert to sats
-        let btc_sats = (btc_balance * 100_000_000.0) as u64; // Convert BTC to sats
+        let total_kes = savings_balance + btc_balance;
+        let total_sats = (total_kes * 100_000_000.0) as u64;
         
         let balance_text = format!(
             r#"💰 *Your BitSacco Balance*
 
-*Savings Balance:* {} sats
-*Bitcoin Balance:* {} sats
-
-*Total Balance:* {} sats
+*Total Balance:* {} sats ({:.2} {})
 
 Last updated: {}"#,
-            savings_sats,
-            btc_sats,
-            savings_sats + btc_sats,
+            total_sats,
+            total_kes,
+            currency,
             chrono::Utc::now().format("%Y-%m-%d %H:%M:%S UTC")
         );
 
