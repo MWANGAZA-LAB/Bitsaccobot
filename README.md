@@ -1,68 +1,229 @@
 # BitSacco WhatsApp Bot
 
-A secure and reliable WhatsApp bot built in Rust for BitSacco users to access savings and Bitcoin services directly through WhatsApp.
+A secure, high-performance WhatsApp bot built in Rust that enables BitSacco users to access savings, Bitcoin services, and chama management directly through WhatsApp messaging.
+
+## 🏗️ Project Architecture
+
+### System Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "External Services"
+        WA[WhatsApp Cloud API]
+        BS[BitSacco.com API]
+        CG[CoinGecko API]
+    end
+    
+    subgraph "BitSacco WhatsApp Bot"
+        subgraph "Web Layer"
+            WH[Webhook Handler]
+            API[REST API]
+            HC[Health Check]
+        end
+        
+        subgraph "Service Layer"
+            WS[WhatsApp Service]
+            BSS[BitSacco Service]
+            BTC[BTC Service]
+        end
+        
+        subgraph "Core Layer"
+            BC[Bot Command Parser]
+            VM[Message Validator]
+            RL[Rate Limiter]
+        end
+        
+        subgraph "Infrastructure"
+            CFG[Configuration]
+            LOG[Logging]
+            ERR[Error Handling]
+        end
+    end
+    
+    subgraph "Users"
+        U1[User 1]
+        U2[User 2]
+        UN[User N]
+    end
+    
+    %% User interactions
+    U1 --> WA
+    U2 --> WA
+    UN --> WA
+    
+    %% External API connections
+    WA <--> WH
+    BS <--> BSS
+    CG <--> BTC
+    
+    %% Internal service connections
+    WH --> BC
+    BC --> VM
+    VM --> RL
+    RL --> WS
+    RL --> BSS
+    RL --> BTC
+    
+    %% Infrastructure connections
+    CFG --> WS
+    CFG --> BSS
+    CFG --> BTC
+    LOG --> WS
+    LOG --> BSS
+    LOG --> BTC
+    ERR --> WS
+    ERR --> BSS
+    ERR --> BTC
+```
+
+### Project Structure
+
+```
+bitsacco-whatsapp-bot/
+├── src/
+│   ├── main.rs                 # Application entry point
+│   ├── lib.rs                  # Library exports
+│   ├── config.rs               # Configuration management
+│   ├── error.rs                # Error handling and types
+│   ├── types.rs                # Data structures and types
+│   ├── webhook.rs              # Webhook handling and REST API
+│   └── services/
+│       ├── whatsapp.rs         # WhatsApp Cloud API integration
+│       ├── bitsacco.rs         # BitSacco.com API integration
+│       └── btc.rs              # Bitcoin price service
+├── tests/
+│   └── integration_tests.rs    # Integration test suite
+├── benches/
+│   └── load_test.rs           # Performance benchmarks
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml          # CI/CD pipeline
+├── docs/
+│   ├── API_INTEGRATION.md     # API integration guide
+│   └── DEPLOYMENT.md          # Deployment instructions
+├── Cargo.toml                 # Rust dependencies
+├── deny.toml                  # License compliance config
+├── Dockerfile                 # Container configuration
+└── docker-compose.yml         # Multi-service deployment
+```
+
+## 🤖 How the Bot Works
+
+### Message Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant WA as WhatsApp API
+    participant B as Bot
+    participant BS as BitSacco API
+    participant CG as CoinGecko API
+    
+    U->>WA: Send message "balance"
+    WA->>B: Webhook POST /webhook
+    B->>B: Parse command
+    B->>B: Validate message
+    B->>B: Check rate limits
+    B->>BS: GET /users/phone/{phone}
+    BS->>B: User data
+    B->>BS: GET /users/{id}/savings
+    BS->>B: Savings data
+    B->>CG: GET /simple/price?ids=bitcoin
+    CG->>B: BTC price data
+    B->>B: Format response
+    B->>WA: POST /messages
+    WA->>U: Deliver message
+```
+
+### Core Components
+
+#### 1. **Webhook Handler** (`src/webhook.rs`)
+
+- Receives incoming WhatsApp messages via webhook
+- Handles webhook verification for WhatsApp Cloud API
+- Routes messages to appropriate handlers
+- Provides REST API endpoints for external integrations
+
+#### 2. **Bot Command Parser** (`src/types.rs`)
+
+- Parses user messages into structured commands
+- Supports natural language processing
+- Handles command aliases and variations
+- Validates command syntax and parameters
+
+#### 3. **Service Layer**
+
+- **WhatsApp Service**: Manages communication with WhatsApp Cloud API
+- **BitSacco Service**: Integrates with BitSacco.com backend for user data and transactions
+- **BTC Service**: Fetches real-time Bitcoin prices from CoinGecko
+
+#### 4. **Security & Validation**
+
+- Input sanitization and validation
+- Rate limiting to prevent abuse
+- Secure API key management
+- Comprehensive error handling
 
 ## 🚀 Features
 
-- **Secure Messaging**: End-to-end protection of user data and financial transactions
-- **BitSacco Integration**: Seamless communication with BitSacco.com backend API
-- **Bitcoin Services**: Real-time BTC price updates and balance management
-- **Chama Management**: View and manage savings groups
-- **Transaction Processing**: Deposit, withdrawal, and transfer capabilities
-- **High Performance**: Built with Rust for maximum speed and reliability
-- **Production Ready**: Dockerized deployment with CI/CD pipeline
+### Core Functionality
+
+- **💬 Natural Language Processing**: Understands user intent from natural messages
+- **💰 Financial Services**: Balance checking, deposits, withdrawals, transfers
+- **₿ Bitcoin Integration**: Real-time BTC prices and portfolio tracking
+- **👥 Chama Management**: Group savings and collaborative financial planning
+- **🔒 Security First**: End-to-end encryption and secure API communications
+
+### Technical Features
+
+- **⚡ High Performance**: Built with Rust for maximum speed and reliability
+- **🐳 Containerized**: Docker support for easy deployment
+- **🔄 CI/CD Pipeline**: Automated testing, building, and deployment
+- **📊 Monitoring**: Comprehensive health checks and logging
+- **🛡️ Security Audits**: Regular dependency and license compliance checks
 
 ## 📋 Prerequisites
 
-- Rust 1.75+ 
-- Docker and Docker Compose
-- WhatsApp Cloud API access
-- BitSacco.com API access
+- **Rust 1.75+** - Programming language and toolchain
+- **Docker & Docker Compose** - Containerization platform
+- **WhatsApp Cloud API Access** - Meta Business account with WhatsApp API
+- **BitSacco.com API Access** - Backend service integration
+- **CoinGecko API Key** (optional) - For enhanced BTC price data
 
-## 🛠️ Installation
+## 🛠️ Quick Start
 
-### 1. Clone the Repository
+### 1. Clone and Setup
 
 ```bash
-git clone https://github.com/bitsacco/whatsapp-bot.git
-cd whatsapp-bot
+git clone https://github.com/MWANGAZA-LAB/Bitsaccobot.git
+cd Bitsaccobot
 ```
 
 ### 2. Environment Configuration
 
-Copy the example environment file and configure your settings:
-
 ```bash
-cp env.example .env
+cp .env.example .env
+# Edit .env with your credentials
 ```
 
-Edit `.env` with your actual credentials:
+Required environment variables:
 
 ```env
-# WhatsApp Cloud API Configuration
-WHATSAPP_ACCESS_TOKEN=your_whatsapp_access_token_here
-WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id_here
-WHATSAPP_WEBHOOK_VERIFY_TOKEN=your_webhook_verify_token_here
+# WhatsApp Cloud API
+WHATSAPP_ACCESS_TOKEN=your_access_token
+WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
+WHATSAPP_WEBHOOK_VERIFY_TOKEN=your_verify_token
 
-# BitSacco API Configuration
+# BitSacco API
 BITSACCO_API_BASE_URL=https://api.bitsacco.com
-BITSACCO_API_TOKEN=your_bitsacco_api_token_here
+BITSACCO_API_TOKEN=your_api_token
 
-# Server Configuration
-SERVER_HOST=0.0.0.0
-SERVER_PORT=8080
-RUST_LOG=info
-
-# Security Configuration
-RATE_LIMIT_REQUESTS_PER_MINUTE=60
-MAX_MESSAGE_LENGTH=4096
-
-# BTC Service Configuration
+# Optional: BTC Service
 BTC_API_BASE_URL=https://api.coingecko.com/api/v3
-BTC_API_KEY=your_btc_api_key_here
+BTC_API_KEY=your_api_key
 ```
 
-### 3. Development Setup
+### 3. Development
 
 ```bash
 # Install dependencies
@@ -71,31 +232,29 @@ cargo build
 # Run tests
 cargo test
 
-# Run the application
+# Start development server
 cargo run
 ```
 
-### 4. Docker Deployment
+### 4. Production Deployment
 
 ```bash
-# Build and run with Docker Compose
+# Docker deployment
 docker-compose up --build
 
-# Or build the Docker image manually
+# Or manual Docker build
 docker build -t bitsacco-whatsapp-bot .
 docker run -p 8080:8080 --env-file .env bitsacco-whatsapp-bot
 ```
 
 ## 🤖 Bot Commands
 
-The bot supports the following commands:
-
 | Command | Description | Example |
 |---------|-------------|---------|
-| `help` | Show help message | `help` |
+| `help` | Show available commands | `help` |
 | `balance` | Check savings and BTC balance | `balance` |
 | `savings` | View detailed savings information | `savings` |
-| `chama` | View chama groups | `chama` |
+| `chama` | View chama groups and members | `chama` |
 | `btc` | Get current Bitcoin price | `btc` |
 | `deposit <amount> <currency>` | Make a deposit | `deposit 100 USD` |
 | `withdraw <amount> <currency>` | Make a withdrawal | `withdraw 50 KES` |
@@ -103,67 +262,89 @@ The bot supports the following commands:
 
 ## 🔧 API Endpoints
 
-### Webhook Endpoint
-- **POST** `/webhook` - Receives WhatsApp messages and webhook verification
+### Webhook Endpoints
 
-### Send Message
+- **POST** `/webhook` - Receives WhatsApp messages and handles webhook verification
+- **GET** `/webhook` - Webhook verification for WhatsApp Cloud API
+
+### REST API
+
 - **POST** `/send` - Send WhatsApp messages programmatically
-
-### Health Check
 - **GET** `/health` - System health and service status
 
-## 🧪 Testing
+### Example API Usage
 
-### Unit Tests
 ```bash
+# Send a message
+curl -X POST http://localhost:8080/send \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "+254712345678",
+    "message": "Hello from BitSacco Bot!"
+  }'
+
+# Check system health
+curl http://localhost:8080/health
+```
+
+## 🧪 Testing & Quality Assurance
+
+### Test Suite
+
+```bash
+# Run all tests
 cargo test
-```
 
-### Integration Tests
-```bash
+# Integration tests only
 cargo test --test integration_tests
-```
 
-### Load Testing
-```bash
+# Performance benchmarks
 cargo bench
-```
 
-### Security Testing
-```bash
+# Security audits
 cargo audit
 cargo deny check
 ```
+
+### Test Coverage
+
+- **Unit Tests**: Individual component testing
+- **Integration Tests**: End-to-end service testing with mocked APIs
+- **Load Tests**: Performance and scalability testing
+- **Security Tests**: Vulnerability and license compliance checks
 
 ## 🚀 Deployment
 
 ### GitHub Actions CI/CD
 
-The project includes a comprehensive CI/CD pipeline that:
+The project includes a comprehensive CI/CD pipeline:
 
-1. **Tests**: Runs unit, integration, and security tests
-2. **Builds**: Creates optimized Docker images
-3. **Deploys**: Automatically deploys to staging and production
-4. **Monitors**: Includes health checks and notifications
+1. **Code Quality**: Formatting, linting, and static analysis
+2. **Testing**: Unit, integration, and security tests
+3. **Building**: Multi-platform Docker image creation
+4. **Deployment**: Automated deployment to staging and production
+5. **Monitoring**: Health checks and notification systems
 
-### Manual Deployment
+### Deployment Options
 
-#### Railway
+#### Railway (Recommended)
+
 ```bash
 # Install Railway CLI
 npm install -g @railway/cli
 
-# Login and deploy
+# Deploy
 railway login
 railway deploy
 ```
 
 #### Docker
+
 ```bash
-# Build production image
+# Production build
 docker build -t bitsacco-whatsapp-bot:latest .
 
-# Run with environment variables
+# Run with environment
 docker run -d \
   --name bitsacco-bot \
   -p 8080:8080 \
@@ -171,25 +352,36 @@ docker run -d \
   bitsacco-whatsapp-bot:latest
 ```
 
+#### Manual Server Deployment
+
+```bash
+# Build release binary
+cargo build --release
+
+# Run with systemd service
+sudo systemctl start bitsacco-whatsapp-bot
+```
+
 ## 🔒 Security Features
 
-- **Input Validation**: All webhook requests are validated and sanitized
-- **Rate Limiting**: Configurable rate limiting to prevent abuse
-- **HTTPS Only**: Secure communication with backend services
-- **No Local Storage**: Sensitive data is not stored locally
-- **Audit Logging**: Comprehensive logging with sensitive data redacted
-- **Dependency Audits**: Regular security audits of dependencies
+- **🛡️ Input Validation**: All inputs are sanitized and validated
+- **⏱️ Rate Limiting**: Configurable rate limits prevent abuse
+- **🔐 Secure Communication**: HTTPS-only API communications
+- **🚫 No Local Storage**: Sensitive data is not stored locally
+- **📝 Audit Logging**: Comprehensive logging with data redaction
+- **🔍 Dependency Audits**: Regular security audits of all dependencies
+- **📋 License Compliance**: Automated license checking and compliance
 
-## 📊 Monitoring
+## 📊 Monitoring & Observability
 
-### Health Checks
-The bot provides comprehensive health monitoring:
+### Health Monitoring
 
 ```bash
 curl http://localhost:8080/health
 ```
 
 Response:
+
 ```json
 {
   "status": "ok",
@@ -199,63 +391,76 @@ Response:
     "whatsapp": "healthy",
     "bitsacco": "healthy",
     "btc": "healthy"
-  }
+  },
+  "uptime": "2h 15m 30s",
+  "memory_usage": "45.2MB"
 }
 ```
 
 ### Logging
-Structured logging with configurable levels:
+
+Structured JSON logging with configurable levels:
 
 ```bash
 # Set log level
 export RUST_LOG=debug
 
 # View logs
-docker logs bitsacco-whatsapp-bot
-```
-
-## 🏗️ Architecture
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   WhatsApp      │    │   BitSacco       │    │   BTC Service   │
-│   Cloud API     │◄──►│   WhatsApp Bot   │◄──►│   (CoinGecko)   │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                       ┌──────────────────┐
-                       │   BitSacco.com   │
-                       │   Backend API    │
-                       └──────────────────┘
+docker logs -f bitsacco-whatsapp-bot
 ```
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+We welcome contributions! Please follow these steps:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Development Guidelines
+
+- Follow Rust best practices and conventions
+- Add tests for new features
+- Update documentation as needed
+- Ensure all CI/CD checks pass
 
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 🆘 Support & Documentation
 
-- **Documentation**: [https://docs.bitsacco.com](https://docs.bitsacco.com)
-- **Issues**: [GitHub Issues](https://github.com/bitsacco/whatsapp-bot/issues)
-- **Email**: support@bitsacco.com
+- **📚 Documentation**: [API Integration Guide](docs/API_INTEGRATION.md)
+- **🚀 Deployment**: [Deployment Guide](docs/DEPLOYMENT.md)
+- **🐛 Issues**: [GitHub Issues](https://github.com/MWANGAZA-LAB/Bitsaccobot/issues)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/MWANGAZA-LAB/Bitsaccobot/discussions)
 
 ## 🗺️ Roadmap
 
-- [ ] Multi-language support
+### Short Term (Q1 2024)
+
+- [ ] Multi-language support (Swahili, French)
+- [ ] Enhanced error messages and user guidance
+- [ ] Advanced chama management features
+
+### Medium Term (Q2-Q3 2024)
+
+- [ ] Voice message support
 - [ ] Advanced analytics and reporting
 - [ ] Integration with more cryptocurrency exchanges
-- [ ] Voice message support
-- [ ] Advanced chama management features
 - [ ] Mobile app integration
+
+### Long Term (Q4 2024+)
+
+- [ ] AI-powered financial advice
+- [ ] Advanced portfolio management
+- [ ] Integration with traditional banking systems
+- [ ] Multi-platform support (Telegram, Signal)
 
 ---
 
-Built with ❤️ by the BitSacco Team
+**Built with ❤️ by the BitSacco Team**
+
+*Empowering financial inclusion through accessible technology*
