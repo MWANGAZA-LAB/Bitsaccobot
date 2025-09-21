@@ -180,10 +180,12 @@ async fn test_btc_service_price() {
     let (config, mut server) = create_test_config().await;
     let btc_service = BtcService::new(&config).unwrap();
 
-
     // Mock the API response - use regex to match any query parameters
     let _m = server
-        .mock("GET", mockito::Matcher::Regex(r"^/simple/price\?.*$".to_string()))
+        .mock(
+            "GET",
+            mockito::Matcher::Regex(r"^/simple/price\?.*$".to_string()),
+        )
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(

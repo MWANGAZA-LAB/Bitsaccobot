@@ -49,10 +49,7 @@ impl WhatsAppService {
             return Err(AppError::Validation("Message too long".to_string()));
         }
 
-        let url = format!(
-            "{}/{}/messages",
-            self.api_base_url, self.phone_number_id
-        );
+        let url = format!("{}/{}/messages", self.api_base_url, self.phone_number_id);
 
         let request = WhatsAppSendRequest {
             messaging_product: "whatsapp".to_string(),
