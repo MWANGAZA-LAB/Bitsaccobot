@@ -473,17 +473,50 @@ document.addEventListener('DOMContentLoaded', function() {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }, 1500);
         
-        // Move to next message
-        setTimeout(() => {
-            currentMessageIndex = (currentMessageIndex + 1) % chatMessages.length;
-            isAnimating = false;
-        }, 3000);
+                // Move to next message
+                setTimeout(() => {
+                    currentMessageIndex = (currentMessageIndex + 1) % chatMessages.length;
+                    isAnimating = false;
+                    
+                    // If we've completed all messages, reset to start
+                    if (currentMessageIndex === 0) {
+                        // Clear the chat and start fresh
+                        setTimeout(() => {
+                            const chatContainer = document.querySelector('.chat-messages');
+                            if (chatContainer) {
+                                const welcomeMessage = chatContainer.querySelector('.message:first-child');
+                                chatContainer.innerHTML = '';
+                                if (welcomeMessage) {
+                                    chatContainer.appendChild(welcomeMessage);
+                                }
+                                
+                                // Add a subtle restart indicator
+                                const restartMessage = document.createElement('div');
+                                restartMessage.className = 'message bot-message';
+                                restartMessage.innerHTML = '<div class="message-content">🔄 <em>Demo cycle restarted...</em></div>';
+                                chatContainer.appendChild(restartMessage);
+                                chatContainer.scrollTop = chatContainer.scrollHeight;
+                                
+                                // Remove restart message after 2 seconds
+                                setTimeout(() => {
+                                    if (restartMessage.parentNode) {
+                                        restartMessage.parentNode.removeChild(restartMessage);
+                                    }
+                                }, 2000);
+                            }
+                        }, 1000);
+                    }
+                }, 3000);
     }
 
-    // Start BitSacco chat animation when page loads
-    setTimeout(() => {
-        animateBitSaccoChat();
-        // Repeat every 4 seconds
-        setInterval(animateBitSaccoChat, 4000);
-    }, 2000);
+            // Start BitSacco chat animation when page loads
+            setTimeout(() => {
+                // Start the continuous animation loop
+                function startContinuousAnimation() {
+                    animateBitSaccoChat();
+                    // Repeat every 4 seconds
+                    setTimeout(startContinuousAnimation, 4000);
+                }
+                startContinuousAnimation();
+            }, 2000);
 });
