@@ -97,3 +97,20 @@ jspm_packages/
 
 # TernJS port file
 .tern-port
+
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk
+
+# Rust build artifacts
+*.pdb
+*.rlib
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Rust test artifacts
+*.test
+*.bench
