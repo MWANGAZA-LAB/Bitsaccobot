@@ -9,7 +9,6 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
-  HAS_DOCKER_CREDS: ${{ secrets.DOCKER_USERNAME && secrets.DOCKER_PASSWORD }}
 
 jobs:
   test:
@@ -104,6 +103,8 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: [test, security]
+    env:
+      HAS_DOCKER_CREDS: ${{ secrets.DOCKER_USERNAME && secrets.DOCKER_PASSWORD }}
     if: ${{ env.HAS_DOCKER_CREDS }}
     
     steps:
