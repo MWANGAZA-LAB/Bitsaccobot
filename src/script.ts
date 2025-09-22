@@ -74,19 +74,28 @@ function getElementById<T extends HTMLElement>(id: string): T | null {
 // Live Bitcoin Price Fetcher with proper error handling
 async function fetchBitcoinPrice(): Promise<void> {
     try {
-        // Fetch USD price
+        // Fetch USD price from Coinbase
         const usdResponse: Response = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot');
         
         if (!usdResponse.ok) {
-            throw new Error(`HTTP error! status: ${usdResponse.status}`);
+            throw new Error(`Coinbase API error! status: ${usdResponse.status}`);
         }
         
         const usdData: BitcoinPriceResponse = await usdResponse.json();
         const usdPrice: number = parseFloat(usdData.data.amount);
         
-        // Fetch KES price (using USD to KES conversion rate)
-        // Note: In a real implementation, you'd want to get KES directly or use a proper exchange rate API
-        const kesRate: number = 150; // Approximate USD to KES rate (you might want to fetch this from an API)
+        // Fetch real-time USD to KES exchange rate
+        let kesRate: number = 129.16; // Fallback rate
+        try {
+            const exchangeResponse: Response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+            if (exchangeResponse.ok) {
+                const exchangeData: any = await exchangeResponse.json();
+                kesRate = exchangeData.rates.KES || 129.16;
+            }
+        } catch (exchangeError) {
+            console.warn('Failed to fetch exchange rate, using fallback:', exchangeError);
+        }
+        
         const kesPrice: number = usdPrice * kesRate;
         
         // Update the DOM elements
@@ -127,7 +136,14 @@ async function fetchBitcoinPrice(): Promise<void> {
         
         if (usdElement) usdElement.textContent = 'Error';
         if (kesElement) kesElement.textContent = 'Error';
-        if (timeElement) timeElement.textContent = 'Failed';
+        if (timeElement) {
+            const now: Date = new Date();
+            timeElement.textContent = now.toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            }) + ' (Error)';
+        }
     }
 }
 
