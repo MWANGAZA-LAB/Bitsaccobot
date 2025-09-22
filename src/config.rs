@@ -10,6 +10,11 @@ pub struct AppConfig {
     pub whatsapp_webhook_verify_token: String,
     pub whatsapp_api_base_url: String,
     pub whatsapp_media_base_url: String,
+    
+    // Twilio configuration
+    pub twilio_account_sid: String,
+    pub twilio_auth_token: String,
+    pub twilio_whatsapp_number: String,
 
     // BitSacco API Configuration
     pub bitsacco_api_base_url: String,
@@ -45,6 +50,14 @@ impl AppConfig {
                 .unwrap_or_else(|_| "https://graph.facebook.com/v18.0".to_string()),
             whatsapp_media_base_url: env::var("WHATSAPP_MEDIA_BASE_URL")
                 .unwrap_or_else(|_| "https://graph.facebook.com/v18.0".to_string()),
+            
+            // Twilio configuration
+            twilio_account_sid: env::var("TWILIO_ACCOUNT_SID")
+                .unwrap_or_else(|_| "".to_string()),
+            twilio_auth_token: env::var("TWILIO_AUTH_TOKEN")
+                .unwrap_or_else(|_| "".to_string()),
+            twilio_whatsapp_number: env::var("TWILIO_WHATSAPP_NUMBER")
+                .unwrap_or_else(|_| "".to_string()),
 
             bitsacco_api_base_url: env::var("BITSACCO_API_BASE_URL")
                 .unwrap_or_else(|_| "https://api.bitsacco.com".to_string()),

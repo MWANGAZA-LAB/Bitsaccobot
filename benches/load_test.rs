@@ -20,6 +20,9 @@ fn create_test_config() -> AppConfig {
         btc_api_base_url: "https://api.coingecko.com/api/v3".to_string(),
         btc_api_key: Some("test_btc_key".to_string()),
         whatsapp_media_base_url: "https://graph.facebook.com/v18.0".to_string(),
+        twilio_account_sid: "test_account_sid".to_string(),
+        twilio_auth_token: "test_auth_token".to_string(),
+        twilio_whatsapp_number: "+1234567890".to_string(),
     }
 }
 

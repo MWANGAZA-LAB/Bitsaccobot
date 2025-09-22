@@ -26,7 +26,7 @@ use cache::AppCache;
 use config::AppConfig;
 use error::AppError;
 use monitoring::{ComponentHealth, HealthStatus, MonitoringService, SystemMetrics};
-use services::{bitsacco::BitSaccoService, btc::BtcService, voice::VoiceService, whatsapp::WhatsAppService};
+use services::{bitsacco::BitSaccoService, btc::BtcService, twilio::TwilioService, voice::VoiceService, whatsapp::WhatsAppService};
 use types::AppState;
 use webhook::{handle_webhook, health_check, send_message};
 
@@ -108,6 +108,7 @@ async fn main() -> Result<()> {
     let bitsacco_service = BitSaccoService::new(&config)?;
     let btc_service = BtcService::new(&config)?;
     let voice_service = VoiceService::new(&config)?;
+    let twilio_service = TwilioService::new(config.clone());
 
     let app_state = AppState {
         config,
@@ -116,6 +117,7 @@ async fn main() -> Result<()> {
         btc_service,
         voice_service,
         cache,
+        twilio_service,
     };
 
     // Build application

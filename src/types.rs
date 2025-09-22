@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use crate::{
     cache::AppCache,
     config::AppConfig,
-    services::{bitsacco::BitSaccoService, btc::BtcService, voice::VoiceService, whatsapp::WhatsAppService},
+    services::{bitsacco::BitSaccoService, btc::BtcService, twilio::TwilioService, voice::VoiceService, whatsapp::WhatsAppService},
 };
 
 #[derive(Debug, Clone)]
@@ -16,6 +16,7 @@ pub struct AppState {
     pub btc_service: BtcService,
     pub voice_service: VoiceService,
     pub cache: AppCache,
+    pub twilio_service: TwilioService,
 }
 
 // WhatsApp API Types
