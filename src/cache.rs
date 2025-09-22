@@ -168,6 +168,7 @@ mod tests {
             phone_number: "+1234567890".to_string(),
             name: Some("Test User".to_string()),
             email: Some("test@example.com".to_string()),
+            mpesa_phone: Some("+1234567890".to_string()),
             created_at: chrono::Utc::now().to_rfc3339(),
             updated_at: chrono::Utc::now().to_rfc3339(),
         };

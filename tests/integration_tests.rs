@@ -72,7 +72,8 @@ async fn test_bot_command_parsing() {
         BotCommand::parse("deposit 100 USD"),
         BotCommand::Deposit {
             amount: 100.0,
-            currency: "USD".to_string()
+            currency: "USD".to_string(),
+            method: None
         }
     );
 
@@ -81,7 +82,8 @@ async fn test_bot_command_parsing() {
         BotCommand::parse("withdraw 50 KES"),
         BotCommand::Withdraw {
             amount: 50.0,
-            currency: "KES".to_string()
+            currency: "KES".to_string(),
+            method: None
         }
     );
 

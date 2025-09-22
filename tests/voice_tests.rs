@@ -128,7 +128,7 @@ async fn test_voice_command_parsing() {
     
     let command = BotCommand::parse("deposit 100 usd");
     match command {
-        BotCommand::Deposit { amount, currency } => {
+        BotCommand::Deposit { amount, currency, method: _ } => {
             assert_eq!(amount, 100.0);
             assert_eq!(currency, "USD");
         }

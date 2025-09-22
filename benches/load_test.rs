@@ -19,6 +19,7 @@ fn create_test_config() -> AppConfig {
         max_message_length: 4096,
         btc_api_base_url: "https://api.coingecko.com/api/v3".to_string(),
         btc_api_key: Some("test_btc_key".to_string()),
+        whatsapp_media_base_url: "https://graph.facebook.com/v18.0".to_string(),
     }
 }
 
