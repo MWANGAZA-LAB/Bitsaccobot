@@ -1,8 +1,7 @@
 pub mod cache;
-pub mod circuit_breaker;
 pub mod config;
 pub mod error;
-pub mod rate_limit;
+pub mod monitoring;
 pub mod services;
 pub mod types;
 pub mod validation;

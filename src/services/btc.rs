@@ -4,7 +4,7 @@ use crate::{
     types::BtcPrice,
 };
 use reqwest::Client;
-use std::collections::HashMap;
+// BTC service for fetching Bitcoin prices
 use tracing::{error, info, warn};
 
 #[derive(Debug, Clone)]

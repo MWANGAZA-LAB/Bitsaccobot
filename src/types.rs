@@ -3,7 +3,6 @@ use std::collections::HashMap;
 
 use crate::{
     cache::AppCache,
-    circuit_breaker::ApiCircuitBreaker,
     config::AppConfig,
     services::{bitsacco::BitSaccoService, btc::BtcService, voice::VoiceService, whatsapp::WhatsAppService},
 };
@@ -17,7 +16,6 @@ pub struct AppState {
     pub btc_service: BtcService,
     pub voice_service: VoiceService,
     pub cache: AppCache,
-    pub circuit_breaker: ApiCircuitBreaker,
 }
 
 // WhatsApp API Types

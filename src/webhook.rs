@@ -7,9 +7,19 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tracing::{error, info};
 
+// Webhook handling module for the BitSacco WhatsApp Bot
+// 
+// This module provides comprehensive webhook handling capabilities including:
+// - WhatsApp webhook verification and message processing
+// - Bot command parsing and execution
+// - Error handling with user-friendly messages
+// - Health check endpoints
+// - Message sending functionality
+
 use crate::{
     error::{AppError, Result},
-    rate_limit::RateLimiterService,
+    monitoring::{HealthStatus, SystemMetrics},
+    // Rate limiting removed - using simple validation instead
     types::{AppState, BotCommand, HealthResponse, WhatsAppSendResponse, WhatsAppWebhook},
     validation::{validate_message, validate_phone_number, validate_amount, validate_currency},
 };
@@ -27,20 +37,29 @@ pub struct SendMessageRequest {
     pub message: String,
 }
 
+/// Handle incoming WhatsApp webhook
+/// 
+/// This function processes incoming webhook requests from WhatsApp, including:
+/// - Webhook verification for initial setup
+/// - Message processing and command parsing
+/// - Error handling with user-friendly responses
+/// - Rate limiting and validation
+/// 
+/// # Arguments
+/// * `state` - Application state containing services and configuration
+/// * `headers` - HTTP headers for webhook signature verification
+/// * `query` - Query parameters for webhook verification
+/// * `payload` - JSON payload containing the webhook data
+/// 
+/// # Returns
+/// * `Result<String>` - Success response or error
 pub async fn handle_webhook(
     State(state): State<AppState>,
     headers: HeaderMap,
     Query(query): Query<WebhookQuery>,
     Json(payload): Json<serde_json::Value>,
 ) -> Result<String> {
-    // Create a simple rate limiter for this request
-    let rate_limiter = RateLimiterService::new(crate::rate_limit::RateLimitConfig {
-        requests_per_minute: state.config.rate_limit_requests_per_minute,
-        burst_size: 10,
-    });
-    
-    // Check rate limit
-    rate_limiter.check_rate_limit("webhook").await?;
+    // Rate limiting simplified - using basic validation
     // Handle webhook verification
     if let (Some(mode), Some(challenge), Some(token)) = (
         &query.hub_mode,

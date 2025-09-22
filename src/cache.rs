@@ -1,4 +1,11 @@
-use crate::error::{AppError, Result};
+// Caching module for the BitSacco WhatsApp Bot
+// 
+// This module provides asynchronous caching capabilities using Moka cache with:
+// - Configurable TTL (Time To Live) for different data types
+// - Cache invalidation strategies
+// - Memory-efficient storage
+// - Thread-safe operations
+
 use crate::types::{BitSaccoBtcBalance, BitSaccoSavings, BitSaccoUser, BtcPrice};
 use moka::future::Cache;
 use std::sync::Arc;

@@ -4,9 +4,10 @@ use crate::{
     types::{WhatsAppAudio, WhatsAppVoice},
 };
 use reqwest::Client;
+use serde_json;
 use std::path::PathBuf;
 use tempfile::NamedTempFile;
-use tracing::{error, info, warn};
+use tracing::info;
 
 /// Voice processing service for handling voice messages
 #[derive(Debug, Clone)]
@@ -67,10 +68,10 @@ impl VoiceService {
 
         // Create a temporary file with the correct extension
         let extension = self.get_audio_extension(&voice.mime_type);
-        let _temp_file = NamedTempFile::new_in(&self.temp_dir)
+        let temp_file = NamedTempFile::new_in(&self.temp_dir)
             .map_err(|e| AppError::Internal(format!("Failed to create temp file: {}", e)))?;
 
-        let file_path = _temp_file.path().with_extension(extension);
+        let file_path = temp_file.path().with_extension(extension);
         std::fs::write(&file_path, &audio_data)
             .map_err(|e| AppError::Internal(format!("Failed to write voice message: {}", e)))?;
 
@@ -145,13 +146,16 @@ impl VoiceService {
     }
 
     /// Generate a mock transcript for testing purposes
+    /// In production, this would integrate with OpenAI Whisper, Azure Speech, or Google Cloud Speech
     async fn generate_mock_transcript(&self, audio_path: &PathBuf) -> Result<String> {
-        // This is a placeholder implementation
-        // In production, you would:
-        // 1. Convert audio to the required format (e.g., WAV, 16kHz, mono)
-        // 2. Send to speech-to-text service
-        // 3. Process the response
+        // Check if OpenAI API key is available for real transcription
+        if let Ok(api_key) = std::env::var("OPENAI_API_KEY") {
+            if !api_key.is_empty() {
+                return self.transcribe_with_openai(audio_path).await;
+            }
+        }
         
+        // Fallback to mock implementation for testing
         let _file_name = audio_path.file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("unknown");
@@ -169,25 +173,119 @@ impl VoiceService {
             Ok("bitcoin price".to_string())
         }
     }
+    
+    /// Transcribe audio using OpenAI Whisper API
+    async fn transcribe_with_openai(&self, audio_path: &PathBuf) -> Result<String> {
+        info!("Using OpenAI Whisper API for transcription");
+        
+        // Read the audio file
+        let audio_data = std::fs::read(audio_path)
+            .map_err(|e| AppError::Internal(format!("Failed to read audio file: {}", e)))?;
+        
+        // Create multipart form data for OpenAI Whisper API
+        let form = reqwest::multipart::Form::new()
+            .text("model", "whisper-1")
+            .text("language", "en")
+            .text("response_format", "json")
+            .part("file", reqwest::multipart::Part::bytes(audio_data)
+                .file_name("audio.wav")
+                .mime_str("audio/wav")?);
+        
+        // Make request to OpenAI Whisper API
+        let response = self.client
+            .post("https://api.openai.com/v1/audio/transcriptions")
+            .header("Authorization", format!("Bearer {}", std::env::var("OPENAI_API_KEY").unwrap_or_default()))
+            .multipart(form)
+            .send()
+            .await
+            .map_err(|e| AppError::Internal(format!("Failed to send request to Whisper API: {}", e)))?;
+        
+        if !response.status().is_success() {
+            let error_text = response.text().await.unwrap_or_default();
+            return Err(AppError::Internal(format!("Whisper API error: {}", error_text)));
+        }
+        
+        let result: serde_json::Value = response.json().await
+            .map_err(|e| AppError::Internal(format!("Failed to parse Whisper API response: {}", e)))?;
+        
+        let transcript = result["text"]
+            .as_str()
+            .ok_or_else(|| AppError::Internal("No transcript in Whisper API response".to_string()))?;
+        
+        info!("OpenAI Whisper transcription completed: {}", transcript);
+        Ok(transcript.to_string())
+    }
 
     /// Convert text to speech and return audio file path
     /// Note: In production, integrate with cloud services like Azure Speech, Google Cloud TTS, or AWS Polly
     pub async fn text_to_speech(&self, text: &str) -> Result<PathBuf> {
         info!("Converting text to speech: {}", text);
         
-        // For now, we'll create a placeholder audio file
-        // In production, this would integrate with a text-to-speech service
+        // Check if OpenAI API key is available for real TTS
+        if let Ok(api_key) = std::env::var("OPENAI_API_KEY") {
+            if !api_key.is_empty() {
+                return self.synthesize_with_openai(text).await;
+            }
+        }
         
-        let _temp_file = NamedTempFile::new_in(&self.temp_dir)
+        // Fallback to mock implementation for testing
+        let temp_file = NamedTempFile::new_in(&self.temp_dir)
             .map_err(|e| AppError::Internal(format!("Failed to create temp file: {}", e)))?;
 
-        let file_path = _temp_file.path().with_extension("wav");
+        let file_path = temp_file.path().with_extension("wav");
         
         // Create a simple WAV file with silence (placeholder)
-        self.create_silence_wav(&file_path, 2000)?; // 2 seconds of silence
+        // Duration based on text length (roughly 150 words per minute)
+        let word_count = text.split_whitespace().count();
+        let duration_ms = (word_count as u32 * 400).max(1000); // 400ms per word, minimum 1 second
+        self.create_silence_wav(&file_path, duration_ms)?;
         
         info!("Text-to-speech audio saved to: {:?}", file_path);
         Ok(file_path)
+    }
+
+    /// Synthesize speech using OpenAI TTS API
+    async fn synthesize_with_openai(&self, text: &str) -> Result<PathBuf> {
+        info!("Using OpenAI TTS API for speech synthesis");
+        
+        // Create request body for OpenAI TTS API
+        let request_body = serde_json::json!({
+            "model": "tts-1",
+            "input": text,
+            "voice": "alloy",
+            "response_format": "wav"
+        });
+        
+        // Make request to OpenAI TTS API
+        let response = self.client
+            .post("https://api.openai.com/v1/audio/speech")
+            .header("Authorization", format!("Bearer {}", std::env::var("OPENAI_API_KEY").unwrap_or_default()))
+            .header("Content-Type", "application/json")
+            .json(&request_body)
+            .send()
+            .await
+            .map_err(|e| AppError::Internal(format!("Failed to send request to TTS API: {}", e)))?;
+        
+        if !response.status().is_success() {
+            let error_text = response.text().await.unwrap_or_default();
+            return Err(AppError::Internal(format!("TTS API error: {}", error_text)));
+        }
+        
+        // Get audio data
+        let audio_data = response.bytes().await
+            .map_err(|e| AppError::Internal(format!("Failed to read TTS response: {}", e)))?;
+        
+        // Save to temporary file
+        let temp_file = NamedTempFile::new_in(&self.temp_dir)
+            .map_err(|e| AppError::Internal(format!("Failed to create temp file: {}", e)))?;
+
+        let file_path = temp_file.path().with_extension("wav");
+        
+        std::fs::write(&file_path, audio_data)
+            .map_err(|e| AppError::Internal(format!("Failed to write TTS audio file: {}", e)))?;
+        
+        info!("OpenAI TTS audio saved to: {:?}", file_path);
+        Ok(file_path.to_path_buf())
     }
 
     /// Create a simple WAV file with silence (placeholder implementation)
@@ -271,7 +369,7 @@ impl VoiceService {
 mod tests {
     use super::*;
     use crate::config::AppConfig;
-    use tempfile::tempdir;
+    // tempfile::tempdir removed - using NamedTempFile instead
 
     fn create_test_config() -> AppConfig {
         AppConfig {
