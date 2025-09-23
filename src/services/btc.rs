@@ -92,24 +92,22 @@ impl BtcService {
     }
 
     async fn get_btc_price_from_coinbase(&self, currency: &str) -> Result<BtcPrice> {
-        // Coinbase API endpoint for BTC price
-        let endpoint = format!("prices/BTC-{}/spot", currency.to_uppercase());
+        // CoinGecko API endpoint for BTC price (no API key required)
+        let endpoint = format!("simple/price?ids=bitcoin&vs_currencies={}&include_24hr_change=true", 
+                              currency.to_lowercase());
 
         let response: serde_json::Value = self.make_request(&endpoint).await?;
 
-        if let Some(data) = response.get("data") {
-            let price_str = data
-                .get("amount")
-                .and_then(|v| v.as_str())
+        if let Some(bitcoin_data) = response.get("bitcoin") {
+            let price = bitcoin_data
+                .get(&currency.to_lowercase())
+                .and_then(|v| v.as_f64())
                 .ok_or_else(|| AppError::BtcService("Price not found in response".to_string()))?;
 
-            let price = price_str
-                .parse::<f64>()
-                .map_err(|_| AppError::BtcService("Invalid price format".to_string()))?;
-
-            // For 24h change, we'll need to make a separate request to get historical data
-            // For now, we'll set it to 0.0 and can enhance later
-            let change_24h = 0.0;
+            let change_24h = bitcoin_data
+                .get(&format!("{}_24h_change", currency.to_lowercase()))
+                .and_then(|v| v.as_f64())
+                .unwrap_or(0.0);
 
             Ok(BtcPrice {
                 currency: currency.to_uppercase(),

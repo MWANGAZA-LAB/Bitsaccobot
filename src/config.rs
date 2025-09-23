@@ -29,7 +29,7 @@ pub struct AppConfig {
     pub rate_limit_requests_per_minute: u32,
     pub max_message_length: usize,
 
-    // BTC Service Configuration
+    // BTC Service Configuration (CoinGecko - no API key required)
     pub btc_api_base_url: String,
     pub btc_api_key: Option<String>,
 }
